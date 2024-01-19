@@ -21,7 +21,8 @@
     "pretty-text",
     "select-kit",
     "theme-transpiler",
-    "truth-helpers"
+    "truth-helpers",
+    "lexical-editor"
   ],
   "resolutions": {
     "**/unset-value": "2.0.1"

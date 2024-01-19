@@ -4,6 +4,7 @@ import EmberObject, { computed } from "@ember/object";
 import { alias } from "@ember/object/computed";
 import { next, schedule, throttle } from "@ember/runloop";
 import { BasePlugin } from "@uppy/core";
+import { textAreaManipulationImpl } from "discourse/lib/autocomplete";
 import $ from "jquery";
 import { resolveAllShortUrls } from "pretty-text/upload-short-url";
 import { ajax } from "discourse/lib/ajax";
@@ -249,9 +250,9 @@ export default Component.extend(ComposerUploadUppy, {
   _composerEditorInit() {
     this._initializeMentionsAutocomplete();
 
-    this.element
-      .querySelector(".d-editor-input")
-      ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
+      this.element
+        .querySelector(".d-editor-input")
+        ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
 
     // Focus on the body unless we have a title
     if (!this.get("composer.canEditTitle")) {
