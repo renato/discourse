@@ -2321,6 +2321,10 @@ developer:
   experimental_topics_filter:
     client: true
     default: false
+  experimental_lexical_editor:
+    default: false
+    client: true
+    hidden: true
   experimental_search_menu:
     client: true
     hidden: true

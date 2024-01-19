@@ -48,6 +48,44 @@ const keys = {
 
 let inputTimeout;
 
+export const textAreaManipulationImpl = {
+  getValue(me) {
+    return me.val();
+  },
+  performAutocomplete({ me, options, state, updateAutoComplete, dataSource, checkTriggerRule }) {
+    let cp = caretPosition(me[0]);
+    const key = me[0].value[cp - 1];
+
+    if (options.key) {
+      if (options.onKeyUp && key !== options.key) {
+        let match = options.onKeyUp(me.val(), cp);
+
+        if (match) {
+          state.completeStart = cp - match[0].length;
+          let term = match[0].substring(1, match[0].length);
+          updateAutoComplete(dataSource(term, options));
+        }
+      }
+    }
+
+    if (state.completeStart === null && cp > 0) {
+      if (key === options.key) {
+        let prevChar = me.val().charAt(cp - 2);
+        if (
+          checkTriggerRule() &&
+          (!prevChar || allowedLettersRegex.test(prevChar))
+        ) {
+          state.completeStart = cp - 1;
+          updateAutoComplete(dataSource("", options));
+        }
+      }
+    } else if (state.completeStart !== null) {
+      let term = me.val().substring(state.completeStart + (options.key ? 1 : 0), cp);
+      updateAutoComplete(dataSource(term, options));
+    }
+  }
+};
+
 export default function (options) {
   if (this.length === 0) {
     return;
@@ -92,7 +130,9 @@ export default function (options) {
   let wrap = null;
   let autocompleteOptions = null;
   let selectedOption = null;
-  let completeStart = null;
+  const state = {
+    completeStart: null,
+  };
   let me = this;
   let div = null;
   let scrollElement = null;
@@ -114,6 +154,8 @@ export default function (options) {
   // input is handled differently
   const isInput = me[0].tagName === "INPUT" && !options.treatAsTextarea;
   let inputSelectedItems = [];
+
+  options.textManipulationImpl ??= textAreaManipulationImpl;
 
   function handlePaste() {
     discourseLater(() => me.trigger("keydown"), 50);
@@ -156,7 +198,7 @@ export default function (options) {
     }
     div = null;
     scrollElement = null;
-    completeStart = null;
+    state.completeStart = null;
     autocompleteOptions = null;
     prevTerm = null;
     _autoCompletePopper = null;
@@ -248,17 +290,17 @@ export default function (options) {
             pos.completeStart !== undefined &&
             pos.completeEnd !== undefined
           ) {
-            completeStart = pos.completeStart;
+            state.completeStart = pos.completeStart;
             completeEnd = pos.completeEnd;
           } else {
-            completeStart = completeEnd = caretPosition(me[0]);
+            state.completeStart = completeEnd = caretPosition(me[0]);
           }
 
           let space =
             text.substring(completeEnd + 1, completeEnd + 2) === " " ? "" : " ";
 
           text =
-            text.substring(0, completeStart) +
+            text.substring(0, state.completeStart) +
             (options.preserveKey ? options.key || "" : "") +
             term +
             space +
@@ -266,7 +308,7 @@ export default function (options) {
 
           me.val(text);
 
-          let newCaretPos = completeStart + 1 + term.length;
+          let newCaretPos = state.completeStart + 1 + term.length;
 
           if (options.key) {
             newCaretPos++;
@@ -334,7 +376,7 @@ export default function (options) {
     }
 
     this.val("");
-    completeStart = 0;
+    state.completeStart = 0;
     wrap.click(function () {
       this.focus();
       return true;
@@ -428,7 +470,7 @@ export default function (options) {
 
     let vOffset = 0;
     let pos = me.caretPosition({
-      pos: completeStart + 1,
+      pos: state.completeStart + 1,
     });
 
     if (options.treatAsTextarea) {
@@ -502,7 +544,7 @@ export default function (options) {
   }
 
   function updateAutoComplete(r) {
-    if (completeStart === null || r === SKIP) {
+    if (state.completeStart === null || r === SKIP) {
       return;
     }
 
@@ -554,36 +596,7 @@ export default function (options) {
       return true;
     }
 
-    let cp = caretPosition(me[0]);
-    const key = me[0].value[cp - 1];
-
-    if (options.key) {
-      if (options.onKeyUp && key !== options.key) {
-        let match = options.onKeyUp(me.val(), cp);
-
-        if (match) {
-          completeStart = cp - match[0].length;
-          let term = match[0].substring(1, match[0].length);
-          updateAutoComplete(dataSource(term, options));
-        }
-      }
-    }
-
-    if (completeStart === null && cp > 0) {
-      if (key === options.key) {
-        let prevChar = me.val().charAt(cp - 2);
-        if (
-          checkTriggerRule() &&
-          (!prevChar || allowedLettersRegex.test(prevChar))
-        ) {
-          completeStart = cp - 1;
-          updateAutoComplete(dataSource("", options));
-        }
-      }
-    } else if (completeStart !== null) {
-      let term = me.val().substring(completeStart + (options.key ? 1 : 0), cp);
-      updateAutoComplete(dataSource(term, options));
-    }
+    options.textManipulationImpl.performAutocomplete({ me, options, state, updateAutoComplete, dataSource, checkTriggerRule });
   }
 
   function guessCompletePosition(opts) {
@@ -650,9 +663,10 @@ export default function (options) {
           inputSelectedItems.push("");
         }
 
-        if (typeof inputSelectedItems[0] === "string" && me.val().length > 0) {
+        const value = textAreaManipulationImpl.getValue(me);
+        if (typeof inputSelectedItems[0] === "string" && value.length > 0) {
           inputSelectedItems.pop();
-          inputSelectedItems.push(me.val());
+          inputSelectedItems.push(value);
           if (options.onChangeItems) {
             options.onChangeItems(inputSelectedItems);
           }
@@ -661,16 +675,16 @@ export default function (options) {
     }
 
     if (!options.key) {
-      completeStart = 0;
+      state.completeStart = 0;
     }
 
     if (e.which === keys.shift) {
       return;
     }
 
-    if (completeStart === null && e.which === keys.backSpace && options.key) {
+    if (state.completeStart === null && e.which === keys.backSpace && options.key) {
       let position = guessCompletePosition({ backSpace: true });
-      completeStart = position.completeStart;
+      state.completeStart = position.completeStart;
 
       if (position.completeEnd) {
         updateAutoComplete(dataSource(position.term, options));
@@ -689,7 +703,7 @@ export default function (options) {
       return true;
     }
 
-    if (completeStart !== null) {
+    if (state.completeStart !== null) {
       cp = caretPosition(me[0]);
 
       // allow people to right arrow out of completion
@@ -699,10 +713,10 @@ export default function (options) {
       }
 
       // If we've backspaced past the beginning, cancel unless no key
-      if (cp <= completeStart && options.key) {
-        closeAutocomplete();
-        return true;
-      }
+      // if (cp <= state.completeStart && options.key) {
+      //   closeAutocomplete();
+      //   return true;
+      // }
 
       // Keyboard codes! So 80's.
       switch (e.which) {
@@ -768,9 +782,9 @@ export default function (options) {
             return true;
           }
 
-          term = me.val().substring(completeStart + (options.key ? 1 : 0), cp);
+          term = me.val().substring(state.completeStart + (options.key ? 1 : 0), cp);
 
-          if (completeStart === cp && term === options.key) {
+          if (state.completeStart === cp && term === options.key) {
             closeAutocomplete();
           }
 

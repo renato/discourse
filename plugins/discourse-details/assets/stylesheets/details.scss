@@ -2,7 +2,8 @@ details {
   position: relative;
 
   .topic-body .cooked &,
-  .d-editor-preview & {
+  .d-editor-preview &,
+  &.editor-details {
     background-color: var(--primary-very-low);
     padding: 0.25rem 0.75rem;
     margin-bottom: 0.5rem;

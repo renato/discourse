@@ -2577,6 +2577,10 @@ en:
       delete_image_button: Delete Image
       toggle_image_grid: Toggle image grid
 
+      lexical:
+        nodes:
+          unknown_label: "Unknown"
+
     notifications:
       tooltip:
         regular:

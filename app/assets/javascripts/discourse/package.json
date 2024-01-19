@@ -95,6 +95,7 @@
     "ember-template-imports": "^4.0.0",
     "ember-test-selectors": "^6.0.0",
     "float-kit": "1.0.0",
+    "lexical-editor": "0.0.1",
     "html-entities": "^2.4.0",
     "imports-loader": "^5.0.0",
     "jquery": "^3.7.1",

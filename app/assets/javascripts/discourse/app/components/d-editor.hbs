@@ -18,6 +18,12 @@
           @onSelectFormTemplate={{@onSelectFormTemplate}}
         />
       </form>
+    {{else if this.siteSettings.experimental_lexical_editor}}
+      <LexicalEditor
+        @value={{@value}}
+        @onChange={{this.handleValueChange}}
+        @composer={{this.outletArgs.composer}}
+      />
     {{else}}
       <div
         class="d-editor-textarea-wrapper

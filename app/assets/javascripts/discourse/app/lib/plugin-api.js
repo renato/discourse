@@ -1,4 +1,8 @@
 import $ from "jquery";
+import { registerLexicalExporter } from "lexical-editor/lexical/exporter";
+import { registerMdastExtension } from "lexical-editor/lexical/exporter/extensions";
+import { registerLexicalImporter } from "lexical-editor/lexical/importer";
+import { registerLexicalNode } from "lexical-editor/lexical/nodes";
 import { h } from "virtual-dom";
 import {
   addComposerUploadHandler,
@@ -2696,6 +2700,22 @@ class PluginApi {
     this.container
       .lookup("service:admin-custom-user-fields")
       .addProperty(userFieldProperty);
+  }
+
+  registerLexicalNode() {
+    registerLexicalNode(...arguments);
+  }
+
+  registerLexicalImporter() {
+    registerLexicalImporter(...arguments);
+  }
+
+  registerLexicalExporter() {
+    registerLexicalExporter(...arguments);
+  }
+
+  registerMdastExtension() {
+    registerMdastExtension(...arguments);
   }
 }
 

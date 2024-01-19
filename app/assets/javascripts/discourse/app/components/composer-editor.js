@@ -4,6 +4,7 @@ import EmberObject, { computed } from "@ember/object";
 import { alias } from "@ember/object/computed";
 import { next, schedule, throttle } from "@ember/runloop";
 import { BasePlugin } from "@uppy/core";
+import { textAreaManipulationImpl } from "discourse/lib/autocomplete";
 import $ from "jquery";
 import { resolveAllShortUrls } from "pretty-text/upload-short-url";
 import { ajax } from "discourse/lib/ajax";
@@ -212,43 +213,46 @@ export default Component.extend(ComposerUploadUppy, {
 
   @on("didInsertElement")
   _composerEditorInit() {
-    const $input = $(this.element.querySelector(".d-editor-input"));
+    // if (!this.siteSettings.experimental_lexical_editor) {
+      const $input = $(this.element.querySelector(".d-editor-input"));
 
-    if (this.siteSettings.enable_mentions) {
-      $input.autocomplete({
-        template: findRawTemplate("user-selector-autocomplete"),
-        dataSource: (term) => {
-          destroyUserStatuses();
-          return userSearch({
-            term,
-            topicId: this.topic?.id,
-            categoryId: this.topic?.category_id || this.composer?.categoryId,
-            includeGroups: true,
-          }).then((result) => {
-            initUserStatusHtml(getOwner(this), result.users);
-            return result;
-          });
-        },
-        onRender: (options) => {
-          renderUserStatusHtml(options);
-        },
-        key: "@",
-        transformComplete: (v) => v.username || v.name,
-        afterComplete: this._afterMentionComplete,
-        triggerRule: (textarea) =>
-          !inCodeBlock(textarea.value, caretPosition(textarea)),
-        onClose: destroyUserStatuses,
-      });
-    }
+      if (this.siteSettings.enable_mentions) {
+        $input.autocomplete({
+          textManipulationImpl: textAreaManipulationImpl,
+          template: findRawTemplate("user-selector-autocomplete"),
+          dataSource: (term) => {
+            destroyUserStatuses();
+            return userSearch({
+              term,
+              topicId: this.topic?.id,
+              categoryId: this.topic?.category_id || this.composer?.categoryId,
+              includeGroups: true,
+            }).then((result) => {
+              initUserStatusHtml(getOwner(this), result.users);
+              return result;
+            });
+          },
+          onRender: (options) => {
+            renderUserStatusHtml(options);
+          },
+          key: "@",
+          transformComplete: (v) => v.username || v.name,
+          afterComplete: this._afterMentionComplete,
+          triggerRule: (textarea) =>
+            !inCodeBlock(textarea.value, caretPosition(textarea)),
+          onClose: destroyUserStatuses,
+        });
+      }
 
-    this.element
-      .querySelector(".d-editor-input")
-      ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
+      this.element
+        .querySelector(".d-editor-input")
+        ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
 
-    // Focus on the body unless we have a title
-    if (!this.get("composer.canEditTitle")) {
-      putCursorAtEnd(this.element.querySelector(".d-editor-input"));
-    }
+      // Focus on the body unless we have a title
+      if (!this.get("composer.canEditTitle")) {
+        putCursorAtEnd(this.element.querySelector(".d-editor-input"));
+      }
+    // }
 
     if (this.allowUpload) {
       this._bindUploadTarget();

@@ -257,6 +257,11 @@ export default Component.extend(TextareaTextManipulation, {
     this.selectedFormTemplateId = formTemplateId;
   },
 
+  @action
+  handleValueChange(value) {
+    this.set("value", value);
+  },
+
   @discourseComputed("formTemplateIds", "replyingToTopic", "editingPost")
   showFormTemplateForm(formTemplateIds, replyingToTopic, editingPost) {
     // TODO(@keegan): Remove !editingPost once we add edit/draft support for form templates

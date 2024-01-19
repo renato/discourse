@@ -14,6 +14,7 @@ CORE_NAMESPACES = {
   "pretty-text/*" => ["app/assets/javascripts/pretty-text/addon"],
   "select-kit/*" => ["app/assets/javascripts/select-kit/addon"],
   "float-kit/*" => ["app/assets/javascripts/float-kit/addon"],
+  "lexical-editor/*" => ["app/assets/javascripts/lexical-editor/addon"],
   "truth-helpers/*" => ["app/assets/javascripts/truth-helpers/addon"],
   "dialog-holder/*" => ["app/assets/javascripts/dialog-holder/addon"],
 }
