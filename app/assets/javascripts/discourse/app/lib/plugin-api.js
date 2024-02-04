@@ -1,8 +1,4 @@
 import $ from "jquery";
-import { registerLexicalExporter } from "lexical-editor/lexical/exporter";
-import { registerMdastExtension } from "lexical-editor/lexical/exporter/extensions";
-import { registerLexicalImporter } from "lexical-editor/lexical/importer";
-import { registerLexicalNode } from "lexical-editor/lexical/nodes";
 import { h } from "virtual-dom";
 import {
   addApiImageWrapperButtonClickEvent,
@@ -2698,20 +2694,12 @@ class PluginApi {
       .addProperty(userFieldProperty);
   }
 
-  registerLexicalNode() {
-    registerLexicalNode(...arguments);
+  registerComposer(composerImpl) {
+    registerComposer(composerImpl);
   }
 
-  registerLexicalImporter() {
-    registerLexicalImporter(...arguments);
-  }
-
-  registerLexicalExporter() {
-    registerLexicalExporter(...arguments);
-  }
-
-  registerMdastExtension() {
-    registerMdastExtension(...arguments);
+  registerComposerExtension(composerKey, extensionImpl) {
+    registerComposerExtension(composerKey, extensionImpl);
   }
 
   /**
