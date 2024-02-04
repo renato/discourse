@@ -1,0 +1,5 @@
+plugins:
+  experimental_lexical_rich_editor:
+    default: false
+    hidden: true
+    client: true
