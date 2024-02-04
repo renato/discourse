@@ -1,8 +1,8 @@
 import { createPopper } from "@popperjs/core";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import { iconHTML } from "discourse-common/lib/icon-library";
-import { gfmFootnoteToMarkdown } from "../vendor/mdast-util-gfm-footnote";
 import footnoteLexicalImporter from "../lib/lexical/importer";
+import { gfmFootnoteToMarkdown } from "../vendor/mdast-util-gfm-footnote";
 
 let inlineFootnotePopper;
 
@@ -122,16 +122,17 @@ export default {
           ?.removeAttribute("data-show");
       });
 
-      api.registerLexicalImporter(footnoteLexicalImporter);
-
-      api.registerMdastExtension(gfmFootnoteToMarkdown());
-      api.registerLexicalExporter({
-        footnote: (node) => {
-          return {
-            type: "html",
-            value: node.children[0].value,
-          };
+      api.registerComposerExtension("lexical-rich", {
+        importer: footnoteLexicalImporter,
+        exporter: {
+          footnote: (node) => {
+            return {
+              type: "html",
+              value: node.children[0].value,
+            };
+          },
         },
+        mdastExtension: gfmFootnoteToMarkdown(),
       });
     });
   },

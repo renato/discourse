@@ -131,6 +131,7 @@
           @formTemplateIds={{this.composer.formTemplateIds}}
           @formTemplateInitialValues={{this.composer.formTemplateInitialValues}}
           @onSelectFormTemplate={{this.composer.onSelectFormTemplate}}
+          @composerImpl={{this.composer.composerImpl}}
         >
           <div class="composer-fields">
             <PluginOutlet
@@ -306,6 +307,18 @@
             </span>
           </div>
 
+          {{#if this.showComposerImplMenu}}
+            TODO: DMenu with >2 options
+          {{else if this.showComposerImplSwitcher}}
+            <DButton
+              @action={{this.composer.toggleComposerImpl}}
+              @translatedAriaLabel={{this.toggleComposerImplLabel}}
+              @icon="pencil-alt"
+              class="hide-preview"
+              @translatedLabel={{this.toggleComposerImplLabel}}
+            />
+          {{/if}}
+
           {{#if this.composer.site.mobileView}}
             <span>
               <PluginOutlet
@@ -395,17 +408,19 @@
             {{/if}}
           </div>
 
-          {{#unless this.site.mobileView}}
-            <DButton
-              @action={{this.composer.togglePreview}}
-              @translatedTitle={{this.composer.toggleText}}
-              @icon="angle-double-left"
-              class={{concat-class
-                "btn-flat btn-mini-toggle toggle-preview"
-                (unless this.composer.showPreview "active")
-              }}
-            />
-          {{/unless}}
+          {{#if this.composer.composerImpl.allowPreview}}
+            {{#unless this.site.mobileView}}
+              <DButton
+                @action={{this.composer.togglePreview}}
+                @translatedTitle={{this.composer.toggleText}}
+                @icon="angle-double-left"
+                class={{concat-class
+                  "btn-flat btn-mini-toggle toggle-preview"
+                  (unless this.composer.showPreview "active")
+                }}
+              />
+            {{/unless}}
+          {{/if}}
         </div>
       </div>
     {{else}}

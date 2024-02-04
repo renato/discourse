@@ -26,8 +26,7 @@
     "ember-cli-htmlbars": "^6.3.0",
     "ember-resolver": "^10.1.1",
     "handlebars": "^4.7.8",
-    "truth-helpers": "1.0.0",
-    "lexical-editor": "0.0.1"
+    "truth-helpers": "1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",

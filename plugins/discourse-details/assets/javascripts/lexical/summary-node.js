@@ -1,8 +1,4 @@
-import {
-  $createParagraphNode,
-  $isElementNode,
-  ElementNode,
-} from "lexical-editor/lexical";
+import { $createParagraphNode, $isElementNode, ElementNode } from "lexical";
 import { $isCollapsibleContainerNode } from "./details-node";
 
 export function convertSummaryElement() {

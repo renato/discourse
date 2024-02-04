@@ -272,6 +272,11 @@ export default Component.extend(TextareaTextManipulation, {
     return false;
   },
 
+  @discourseComputed("composerImpl.key")
+  hasNonDefaultComposer() {
+    return this.composerImpl.key !== "default";
+  },
+
   @discourseComputed("placeholder")
   placeholderTranslated(placeholder) {
     if (placeholder) {

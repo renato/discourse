@@ -4,7 +4,6 @@ import EmberObject, { computed } from "@ember/object";
 import { alias } from "@ember/object/computed";
 import { next, schedule, throttle } from "@ember/runloop";
 import { BasePlugin } from "@uppy/core";
-import { textAreaManipulationImpl } from "discourse/lib/autocomplete";
 import $ from "jquery";
 import { resolveAllShortUrls } from "pretty-text/upload-short-url";
 import { ajax } from "discourse/lib/ajax";
@@ -17,7 +16,6 @@ import {
   linkSeenMentions,
 } from "discourse/lib/link-mentions";
 import { loadOneboxes } from "discourse/lib/load-oneboxes";
-import putCursorAtEnd from "discourse/lib/put-cursor-at-end";
 import { authorizesOneOrMoreImageExtensions } from "discourse/lib/uploads";
 import userSearch from "discourse/lib/user-search";
 import {
@@ -57,7 +55,7 @@ import I18n from "discourse-i18n";
 // Group 3 is optional. group 4 can match images with or without a markdown title.
 // All matches are whitespace tolerant as long it's still valid markdown.
 // If the image is inside a code block, we'll ignore it `(?!(.*`))`.
-const IMAGE_MARKDOWN_REGEX =
+export const IMAGE_MARKDOWN_REGEX =
   /!\[(.*?)\|(\d{1,4}x\d{1,4})(,\s*\d{1,3}%)?(.*?)\]\((upload:\/\/.*?)\)(?!(.*`))/g;
 
 let uploadHandlers = [];
@@ -102,6 +100,7 @@ export function addComposerUploadMarkdownResolver(resolver) {
 export function cleanUpComposerUploadMarkdownResolver() {
   uploadMarkdownResolvers = [];
 }
+
 export default Component.extend(ComposerUploadUppy, {
   classNameBindings: ["showToolbar:toolbar-visible", ":wmd-controls"],
 
@@ -152,7 +151,9 @@ export default Component.extend(ComposerUploadUppy, {
   @observes("focusTarget")
   setFocus() {
     if (this.focusTarget === "editor") {
-      putCursorAtEnd(this.element.querySelector("textarea"));
+      this.composerImpl.textManipulationImpl.putCursorAtEnd(
+        this.element.querySelector("textarea")
+      );
     }
   },
 
@@ -210,49 +211,54 @@ export default Component.extend(ComposerUploadUppy, {
       input?.focus();
     });
   },
+  @observes("composerImpl.key")
+  _initializeMentionsAutocomplete() {
+    // TODO events cleanup?
+    const $input = $(this.element.querySelector(".d-editor-input"));
+
+    if (this.siteSettings.enable_mentions) {
+      $input.autocomplete({
+        textManipulationImpl: this.composerImpl.textManipulationImpl,
+        template: findRawTemplate("user-selector-autocomplete"),
+        dataSource: (term) => {
+          destroyUserStatuses();
+          return userSearch({
+            term,
+            topicId: this.topic?.id,
+            categoryId: this.topic?.category_id || this.composer?.categoryId,
+            includeGroups: true,
+          }).then((result) => {
+            initUserStatusHtml(getOwner(this), result.users);
+            return result;
+          });
+        },
+        onRender: (options) => {
+          renderUserStatusHtml(options);
+        },
+        key: "@",
+        transformComplete: (v) => v.username || v.name,
+        afterComplete: this._afterMentionComplete,
+        triggerRule: (textarea) =>
+          !inCodeBlock(textarea.value, caretPosition(textarea)),
+        onClose: destroyUserStatuses,
+      });
+    }
+  },
 
   @on("didInsertElement")
   _composerEditorInit() {
-    // if (!this.siteSettings.experimental_lexical_editor) {
-      const $input = $(this.element.querySelector(".d-editor-input"));
+    this._initializeMentionsAutocomplete();
 
-      if (this.siteSettings.enable_mentions) {
-        $input.autocomplete({
-          textManipulationImpl: textAreaManipulationImpl,
-          template: findRawTemplate("user-selector-autocomplete"),
-          dataSource: (term) => {
-            destroyUserStatuses();
-            return userSearch({
-              term,
-              topicId: this.topic?.id,
-              categoryId: this.topic?.category_id || this.composer?.categoryId,
-              includeGroups: true,
-            }).then((result) => {
-              initUserStatusHtml(getOwner(this), result.users);
-              return result;
-            });
-          },
-          onRender: (options) => {
-            renderUserStatusHtml(options);
-          },
-          key: "@",
-          transformComplete: (v) => v.username || v.name,
-          afterComplete: this._afterMentionComplete,
-          triggerRule: (textarea) =>
-            !inCodeBlock(textarea.value, caretPosition(textarea)),
-          onClose: destroyUserStatuses,
-        });
-      }
+    this.element
+      .querySelector(".d-editor-input")
+      ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
 
-      this.element
-        .querySelector(".d-editor-input")
-        ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
-
-      // Focus on the body unless we have a title
-      if (!this.get("composer.canEditTitle")) {
-        putCursorAtEnd(this.element.querySelector(".d-editor-input"));
-      }
-    // }
+    // Focus on the body unless we have a title
+    if (!this.get("composer.canEditTitle")) {
+      this.composerImpl.textManipulationImpl.putCursorAtEnd(
+        this.element.querySelector(".d-editor-input")
+      );
+    }
 
     if (this.allowUpload) {
       this._bindUploadTarget();

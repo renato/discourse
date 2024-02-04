@@ -23,19 +23,21 @@ function initializeDetails(api) {
     label: "details.title",
   });
 
-  api.registerLexicalNode(SummaryNode, DetailsNode);
-  api.registerLexicalImporter(lexicalImporter);
-  api.registerLexicalExporter({
-    details(node, { serializeNodes }) {
-      const [summaryNode, ...detailsNodes] = node.getChildren();
-      const title = summaryNode.getTextContent();
-      const content = serializeNodes(detailsNodes);
-      return {
-        type: "html",
-        value: `[details="${title}"]\n${content}[/details]`,
-      };
+  api.registerComposerExtension("lexical-rich", {
+    node: [SummaryNode, DetailsNode],
+    importer: lexicalImporter,
+    exporter: {
+      details(node, { serializeNodes }) {
+        const [summaryNode, ...detailsNodes] = node.getChildren();
+        const title = summaryNode.getTextContent();
+        const content = serializeNodes(detailsNodes);
+        return {
+          type: "html",
+          value: `[details="${title}"]\n${content}[/details]`,
+        };
+      },
+      summary() {},
     },
-    summary() {},
   });
 }
 

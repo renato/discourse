@@ -1,4 +1,4 @@
-import { ElementNode } from "lexical-editor/lexical";
+import { ElementNode } from "lexical";
 
 export function convertDetailsElement(domNode) {
   const isOpen = domNode.open !== undefined ? domNode.open : true;

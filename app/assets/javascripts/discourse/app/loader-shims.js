@@ -1,7 +1,7 @@
 import { importSync } from "@embroider/macros";
 import loaderShim from "discourse-common/lib/loader-shim";
 
-// AMD shims for the app bunndle, see the comment in loader-shim.js
+// AMD shims for the app bundle, see the comment in loader-shim.js
 // These effectively become public APIs for plugins, so add/remove them carefully
 loaderShim("@discourse/itsatrap", () => importSync("@discourse/itsatrap"));
 loaderShim("@ember-compat/tracked-built-ins", () =>
@@ -33,3 +33,22 @@ loaderShim("js-yaml", () => importSync("js-yaml"));
 loaderShim("message-bus-client", () => importSync("message-bus-client"));
 loaderShim("virtual-dom", () => importSync("virtual-dom"));
 loaderShim("xss", () => importSync("xss"));
+
+// TODO this is necessary so details/footnotes/spoiler plugins can import Lexical classes
+// And, of course, the lexical-rich-editor plugin itself.
+// In an ideal world, theme components will be able to import packages
+loaderShim("lexical", () => importSync("lexical"));
+loaderShim("@lexical/utils", () => importSync("@lexical/utils"));
+loaderShim("@lexical/code", () => importSync("@lexical/code"));
+loaderShim("@lexical/link", () => importSync("@lexical/link"));
+loaderShim("@lexical/list", () => importSync("@lexical/list"));
+loaderShim("@lexical/rich-text", () => importSync("@lexical/rich-text"));
+loaderShim("@lexical/table", () => importSync("@lexical/table"));
+loaderShim("@lexical/selection", () => importSync("@lexical/selection"));
+loaderShim("@lexical/text", () => importSync("@lexical/text"));
+loaderShim("@lexical/markdown", () => importSync("@lexical/markdown"));
+loaderShim("@lexical/hashtag", () => importSync("@lexical/hashtag"));
+loaderShim("@lexical/clipboard", () => importSync("@lexical/clipboard"));
+loaderShim("mdast-util-to-markdown", () =>
+  importSync("mdast-util-to-markdown")
+);

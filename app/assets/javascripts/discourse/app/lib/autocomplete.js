@@ -1,6 +1,7 @@
 import { cancel } from "@ember/runloop";
 import { createPopper } from "@popperjs/core";
 import $ from "jquery";
+import putCursorAtEnd from "discourse/lib/put-cursor-at-end";
 import { isDocumentRTL } from "discourse/lib/text-direction";
 import { caretPosition, setCaretPosition } from "discourse/lib/utilities";
 import Site from "discourse/models/site";
@@ -49,10 +50,18 @@ const keys = {
 let inputTimeout;
 
 export const textAreaManipulationImpl = {
+  putCursorAtEnd,
   getValue(me) {
     return me.val();
   },
-  performAutocomplete({ me, options, state, updateAutoComplete, dataSource, checkTriggerRule }) {
+  performAutocomplete({
+    me,
+    options,
+    state,
+    updateAutoComplete,
+    dataSource,
+    checkTriggerRule,
+  }) {
     let cp = caretPosition(me[0]);
     const key = me[0].value[cp - 1];
 
@@ -80,10 +89,60 @@ export const textAreaManipulationImpl = {
         }
       }
     } else if (state.completeStart !== null) {
-      let term = me.val().substring(state.completeStart + (options.key ? 1 : 0), cp);
+      let term = me
+        .val()
+        .substring(state.completeStart + (options.key ? 1 : 0), cp);
       updateAutoComplete(dataSource(term, options));
     }
-  }
+  },
+
+  completeTerm({ me, guessCompletePosition, state, options, term }) {
+    let text = me.val();
+
+    // After completion is done our position for completeStart may have
+    // drifted. This can happen if the TEXTAREA changed out-of-band between
+    // the time autocomplete was first displayed and the time of completion
+    // Specifically this may happen due to uploads which inject a placeholder
+    // which is later replaced with a different length string.
+    let pos = guessCompletePosition({ completeTerm: true });
+
+    let completeEnd = null;
+
+    if (pos.completeStart !== undefined && pos.completeEnd !== undefined) {
+      state.completeStart = pos.completeStart;
+      completeEnd = pos.completeEnd;
+    } else {
+      state.completeStart = completeEnd = caretPosition(me[0]);
+    }
+
+    let space =
+      text.substring(completeEnd + 1, completeEnd + 2) === " " ? "" : " ";
+
+    text =
+      text.substring(0, state.completeStart) +
+      (options.preserveKey ? options.key || "" : "") +
+      term +
+      space +
+      text.substring(completeEnd + 1, text.length);
+
+    me.val(text);
+
+    let newCaretPos = state.completeStart + 1 + term.length;
+
+    if (options.key) {
+      newCaretPos++;
+    }
+
+    setCaretPosition(me[0], newCaretPos);
+
+    return text;
+  },
+
+  getCaretPosition({ me, state }) {
+    return me.caretPosition({
+      pos: state.completeStart + 1,
+    });
+  },
 };
 
 export default function (options) {
@@ -262,8 +321,6 @@ export default function (options) {
   }
 
   let completeTerm = async function (term, event) {
-    let completeEnd = null;
-
     if (term) {
       if (isInput) {
         me.val("");
@@ -277,44 +334,13 @@ export default function (options) {
         }
 
         if (term) {
-          let text = me.val();
-
-          // After completion is done our position for completeStart may have
-          // drifted. This can happen if the TEXTAREA changed out-of-band between
-          // the time autocomplete was first displayed and the time of completion
-          // Specifically this may happen due to uploads which inject a placeholder
-          // which is later replaced with a different length string.
-          let pos = guessCompletePosition({ completeTerm: true });
-
-          if (
-            pos.completeStart !== undefined &&
-            pos.completeEnd !== undefined
-          ) {
-            state.completeStart = pos.completeStart;
-            completeEnd = pos.completeEnd;
-          } else {
-            state.completeStart = completeEnd = caretPosition(me[0]);
-          }
-
-          let space =
-            text.substring(completeEnd + 1, completeEnd + 2) === " " ? "" : " ";
-
-          text =
-            text.substring(0, state.completeStart) +
-            (options.preserveKey ? options.key || "" : "") +
-            term +
-            space +
-            text.substring(completeEnd + 1, text.length);
-
-          me.val(text);
-
-          let newCaretPos = state.completeStart + 1 + term.length;
-
-          if (options.key) {
-            newCaretPos++;
-          }
-
-          setCaretPosition(me[0], newCaretPos);
+          const text = options.textManipulationImpl.completeTerm({
+            me,
+            guessCompletePosition,
+            state,
+            options,
+            term,
+          });
 
           if (options && options.afterComplete) {
             options.afterComplete(text, event);
@@ -469,9 +495,8 @@ export default function (options) {
     }
 
     let vOffset = 0;
-    let pos = me.caretPosition({
-      pos: state.completeStart + 1,
-    });
+
+    let pos = options.textManipulationImpl.getCaretPosition({ me, state });
 
     if (options.treatAsTextarea) {
       vOffset = -32;
@@ -596,7 +621,15 @@ export default function (options) {
       return true;
     }
 
-    options.textManipulationImpl.performAutocomplete({ me, options, state, updateAutoComplete, dataSource, checkTriggerRule });
+    options.textManipulationImpl.performAutocomplete({
+      me,
+      options,
+      state,
+      updateAutoComplete,
+      dataSource,
+      checkTriggerRule,
+      event: e,
+    });
   }
 
   function guessCompletePosition(opts) {
@@ -663,7 +696,7 @@ export default function (options) {
           inputSelectedItems.push("");
         }
 
-        const value = textAreaManipulationImpl.getValue(me);
+        const value = options.textManipulationImpl.getValue(me);
         if (typeof inputSelectedItems[0] === "string" && value.length > 0) {
           inputSelectedItems.pop();
           inputSelectedItems.push(value);
@@ -682,7 +715,11 @@ export default function (options) {
       return;
     }
 
-    if (state.completeStart === null && e.which === keys.backSpace && options.key) {
+    if (
+      state.completeStart === null &&
+      e.which === keys.backSpace &&
+      options.key
+    ) {
       let position = guessCompletePosition({ backSpace: true });
       state.completeStart = position.completeStart;
 
@@ -782,7 +819,9 @@ export default function (options) {
             return true;
           }
 
-          term = me.val().substring(state.completeStart + (options.key ? 1 : 0), cp);
+          term = me
+            .val()
+            .substring(state.completeStart + (options.key ? 1 : 0), cp);
 
           if (state.completeStart === cp && term === options.key) {
             closeAutocomplete();

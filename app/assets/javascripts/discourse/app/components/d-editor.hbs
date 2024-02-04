@@ -18,11 +18,12 @@
           @onSelectFormTemplate={{@onSelectFormTemplate}}
         />
       </form>
-    {{else if this.siteSettings.experimental_lexical_editor}}
-      <LexicalEditor
+    {{else if this.hasNonDefaultComposer}}
+      <this.composerImpl.component
         @value={{@value}}
         @onChange={{this.handleValueChange}}
         @composer={{this.outletArgs.composer}}
+        @initialize={{this.composerImpl.componentInit}}
       />
     {{else}}
       <div
