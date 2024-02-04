@@ -52,7 +52,7 @@ export default class Editor {
   constructor(transformers = getTransformers()) {
     this.engine = createEditor({
       namespace: "DiscourseComposer",
-      onError: console.error,
+      // onError: console.error,
       theme,
       nodes: getLexicalNodes(),
     });

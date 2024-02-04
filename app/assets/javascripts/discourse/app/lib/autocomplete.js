@@ -750,10 +750,10 @@ export default function (options) {
       }
 
       // If we've backspaced past the beginning, cancel unless no key
-      // if (cp <= state.completeStart && options.key) {
-      //   closeAutocomplete();
-      //   return true;
-      // }
+      if (cp <= state.completeStart && options.key) {
+        closeAutocomplete();
+        return true;
+      }
 
       // Keyboard codes! So 80's.
       switch (e.which) {

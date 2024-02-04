@@ -4,12 +4,12 @@ import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import { UnknownNode } from "./unknown-node";
 import { EmojiNode } from "./emoji-node";
 import { HorizontalRuleNode } from "./horizontal-rule-node";
 import { ImageNode } from "./image-node";
 import { MentionNode } from "./mention-node";
 import { UnformattedTextNode } from "./unformatted-text-node";
+import { UnknownNode } from "./unknown-node";
 
 const customNodes = [];
 export function registerLexicalNode(...typeClass) {
@@ -38,5 +38,5 @@ export const DEFAULT_NODES = [
   MentionNode,
   UnformattedTextNode,
   HorizontalRuleNode,
-  UnknownNode
+  UnknownNode,
 ];

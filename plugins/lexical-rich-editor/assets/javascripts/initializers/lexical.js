@@ -5,7 +5,7 @@ import Editor from "../lexical/editor";
 import { registerLexicalExporter } from "../lexical/exporter";
 import { registerMdastExtension } from "../lexical/exporter/extensions";
 import { registerLexicalImporter } from "../lexical/importer";
-import { getDOMRange, getSelectedNode } from "../lexical/lib/helpers";
+import { getSelectedNode } from "../lexical/lib/helpers";
 import { registerLexicalNode } from "../lexical/nodes";
 import {
   $createMentionNode,
@@ -45,7 +45,7 @@ const textManipulationImpl = {
   putCursorAtEnd() {
     // TODO
   },
-  getValue(me) {
+  getValue() {
     // TODO
   },
   performAutocomplete({

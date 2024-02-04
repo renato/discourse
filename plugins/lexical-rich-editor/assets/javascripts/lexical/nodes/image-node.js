@@ -89,6 +89,9 @@ export class ImageNode extends DecoratorNode {
     writable.__height = height;
   }
 
+  get src() {
+    return this.__src;
+  }
   set src(src) {
     const writable = this.getWritable();
     writable.__src = src;
@@ -107,10 +110,6 @@ export class ImageNode extends DecoratorNode {
 
   updateDOM() {
     return false;
-  }
-
-  get src() {
-    return this.__src;
   }
 
   get shortUrl() {
