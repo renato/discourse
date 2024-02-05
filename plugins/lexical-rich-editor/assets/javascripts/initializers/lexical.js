@@ -7,10 +7,6 @@ import { registerMdastExtension } from "../lexical/exporter/extensions";
 import { registerLexicalImporter } from "../lexical/importer";
 import { getSelectedNode } from "../lexical/lib/helpers";
 import { registerLexicalNode } from "../lexical/nodes";
-import {
-  $createMentionNode,
-  $isMentionNode,
-} from "../lexical/nodes/mention-node";
 
 // TODO remove this singleton
 let engine;
@@ -23,9 +19,9 @@ function getWord(selection) {
   }
 
   const anchorNode = anchor.getNode();
-  if (!$isMentionNode(anchorNode)) {
-    return null;
-  }
+  // if (!regex.text(anchorNode)) {
+  //   return null;
+  // }
 
   const anchorOffset = anchor.offset;
   const lastSpace =
@@ -54,6 +50,7 @@ const textManipulationImpl = {
     state,
     updateAutoComplete,
     dataSource,
+    checkTriggerRule,
   }) {
     engine.getEditorState().read(async () => {
       const selection = $getSelection();
@@ -63,19 +60,19 @@ const textManipulationImpl = {
 
       state.completeStart = 0;
 
-      const term = getWord(selection) ?? "";
-      updateAutoComplete(dataSource(term, options));
+      if (!checkTriggerRule()) {
+        return;
+      }
 
-      event.preventDefault();
+      const term = getWord(selection) ?? "";
+      console.log({term});
+      updateAutoComplete(dataSource(term, options));
     });
   },
   completeTerm({ term }) {
     engine.update(() => {
-      const mentionNode = $createMentionNode(`@${term}`);
       const selection = $getSelection();
-      const node = getSelectedNode(selection);
-      node.replace(mentionNode);
-      mentionNode.selectEnd();
+      selection.replace(term);
     });
   },
   getCaretPosition() {
@@ -90,6 +87,10 @@ const textManipulationImpl = {
         top: rect.top - rootRect.top,
       };
     });
+  },
+
+  inCodeBlock() {
+    return false; // TODO
   }
 };
 

@@ -23,11 +23,7 @@ import {
   initUserStatusHtml,
   renderUserStatusHtml,
 } from "discourse/lib/user-status-on-autocomplete";
-import {
-  caretPosition,
-  formatUsername,
-  inCodeBlock,
-} from "discourse/lib/utilities";
+import { formatUsername } from "discourse/lib/utilities";
 import ComposerUploadUppy from "discourse/mixins/composer-upload-uppy";
 import Composer from "discourse/models/composer";
 import { isTesting } from "discourse-common/config/environment";
@@ -238,8 +234,7 @@ export default Component.extend(ComposerUploadUppy, {
         key: "@",
         transformComplete: (v) => v.username || v.name,
         afterComplete: this._afterMentionComplete,
-        triggerRule: (textarea) =>
-          !inCodeBlock(textarea.value, caretPosition(textarea)),
+        triggerRule: (me, { inCodeBlock }) => !inCodeBlock(me),
         onClose: destroyUserStatuses,
       });
     }

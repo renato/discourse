@@ -3,7 +3,7 @@ import { createPopper } from "@popperjs/core";
 import $ from "jquery";
 import putCursorAtEnd from "discourse/lib/put-cursor-at-end";
 import { isDocumentRTL } from "discourse/lib/text-direction";
-import { caretPosition, setCaretPosition } from "discourse/lib/utilities";
+import { caretPosition, inCodeBlock, setCaretPosition } from "discourse/lib/utilities";
 import Site from "discourse/models/site";
 import { INPUT_DELAY } from "discourse-common/config/environment";
 import discourseDebounce from "discourse-common/lib/debounce";
@@ -142,6 +142,10 @@ export const textAreaManipulationImpl = {
     return me.caretPosition({
       pos: state.completeStart + 1,
     });
+  },
+
+  inCodeBlock(textarea) {
+    return inCodeBlock(textarea.value ?? textarea.val(), caretPosition(textarea));
   },
 };
 
@@ -604,7 +608,8 @@ export default function (options) {
     closeAutocomplete();
   });
 
-  function checkTriggerRule(opts) {
+  function checkTriggerRule(_opts) {
+    const opts = {..._opts, inCodeBlock: options.textManipulationImpl.inCodeBlock };
     return options.triggerRule ? options.triggerRule(me[0], opts) : true;
   }
 
@@ -741,19 +746,22 @@ export default function (options) {
     }
 
     if (state.completeStart !== null) {
+      // TODO
       cp = caretPosition(me[0]);
 
       // allow people to right arrow out of completion
       if (e.which === keys.rightArrow && me[0].value[cp] === " ") {
         closeAutocomplete();
+        console.log("right arrow out of completion");
         return true;
       }
 
       // If we've backspaced past the beginning, cancel unless no key
-      if (cp <= state.completeStart && options.key) {
-        closeAutocomplete();
-        return true;
-      }
+      // TODO
+      // if (cp <= state.completeStart && options.key) {
+      //   closeAutocomplete();
+      //   return true;
+      // }
 
       // Keyboard codes! So 80's.
       switch (e.which) {

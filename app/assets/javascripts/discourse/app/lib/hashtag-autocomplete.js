@@ -17,7 +17,6 @@ import { emojiUnescape } from "discourse/lib/text";
 import {
   caretPosition,
   escapeExpression,
-  inCodeBlock,
 } from "discourse/lib/utilities";
 import { INPUT_DELAY, isTesting } from "discourse-common/config/environment";
 import discourseDebounce from "discourse-common/lib/debounce";
@@ -140,12 +139,8 @@ export function setupHashtagAutocomplete(
   );
 }
 
-export function hashtagTriggerRule(textarea) {
-  if (inCodeBlock(textarea.value, caretPosition(textarea))) {
-    return false;
-  }
-
-  return true;
+export function hashtagTriggerRule(me, { inCodeBlock }) {
+  return !inCodeBlock(me);
 }
 
 function _setup(
@@ -159,6 +154,7 @@ function _setup(
     key: "#",
     afterComplete: autocompleteOptions.afterComplete,
     treatAsTextarea: autocompleteOptions.treatAsTextarea,
+    textManipulationImpl: autocompleteOptions.textManipulationImpl,
     scrollElementSelector: ".hashtag-autocomplete__fadeout",
     autoSelectFirstSuggestion: true,
     transformComplete: (obj) => obj.ref,

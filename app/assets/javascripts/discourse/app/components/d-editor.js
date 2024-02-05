@@ -20,11 +20,7 @@ import { loadOneboxes } from "discourse/lib/load-oneboxes";
 import loadScript from "discourse/lib/load-script";
 import { emojiUrlFor, generateCookFunction } from "discourse/lib/text";
 import { siteDir } from "discourse/lib/text-direction";
-import {
-  caretPosition,
-  inCodeBlock,
-  translateModKey,
-} from "discourse/lib/utilities";
+import { translateModKey } from "discourse/lib/utilities";
 import TextareaTextManipulation, {
   getHead,
 } from "discourse/mixins/textarea-text-manipulation";
@@ -520,6 +516,7 @@ export default Component.extend(TextareaTextManipulation, {
       this._$textarea,
       this.siteSettings,
       {
+        textManipulationImpl: this.composerImpl.textManipulationImpl,
         afterComplete: (value) => {
           this.set("value", value);
           schedule("afterRender", this, this.focusTextArea);
@@ -534,6 +531,7 @@ export default Component.extend(TextareaTextManipulation, {
     }
 
     $textarea.autocomplete({
+      textManipulationImpl: this.composerImpl.textManipulationImpl,
       template: findRawTemplate("emoji-selector-autocomplete"),
       key: ":",
       afterComplete: (text) => {
@@ -542,7 +540,7 @@ export default Component.extend(TextareaTextManipulation, {
       },
 
       onKeyUp: (text, cp) => {
-        if (inCodeBlock(text, cp)) {
+        if (this.composerImpl.textManipulationImpl.inCodeBlock($textarea)) {
           return false;
         }
 
@@ -649,8 +647,7 @@ export default Component.extend(TextareaTextManipulation, {
           });
       },
 
-      triggerRule: (textarea) =>
-        !inCodeBlock(textarea.value, caretPosition(textarea)),
+      triggerRule: (me, { inCodeBlock }) => !inCodeBlock(me),
     });
   },
 
