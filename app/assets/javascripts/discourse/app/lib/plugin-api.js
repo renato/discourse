@@ -17,7 +17,7 @@ import {
   registerReviewableActionModal,
 } from "discourse/components/reviewable-item";
 import { addAdvancedSearchOptions } from "discourse/components/search-advanced-options";
-import { addSearchSuggestion as addGlimmerSearchSuggestion } from "discourse/components/search-menu/results/assistant";
+import { addSearchSuggestion } from "discourse/components/search-menu/results/assistant";
 import { addItemSelectCallback as addSearchMenuAssistantSelectCallback } from "discourse/components/search-menu/results/assistant-item";
 import {
   addQuickSearchRandomTip,
@@ -121,12 +121,6 @@ import {
   preventCloak,
 } from "discourse/widgets/post-stream";
 import { disableNameSuppression } from "discourse/widgets/poster-name";
-import { addOnKeyDownCallback } from "discourse/widgets/search-menu";
-import {
-  addQuickSearchRandomTip as addWidgetQuickSearchRandomTip,
-  addSearchSuggestion,
-  removeDefaultQuickSearchRandomTips as removeWidgetDefaultQuickSearchRandomTips,
-} from "discourse/widgets/search-menu-results";
 import {
   changeSetting,
   createWidget,
@@ -1871,7 +1865,6 @@ class PluginApi {
    */
   addSearchSuggestion(value) {
     addSearchSuggestion(value);
-    addGlimmerSearchSuggestion(value);
   }
 
   /**
@@ -1945,7 +1938,6 @@ class PluginApi {
    *
    */
   addSearchMenuOnKeyDownCallback(fn) {
-    addOnKeyDownCallback(fn);
     addOnKeyUpCallback(fn);
   }
 
@@ -1966,7 +1958,6 @@ class PluginApi {
    */
   addQuickSearchRandomTip(tip) {
     addQuickSearchRandomTip(tip);
-    addWidgetQuickSearchRandomTip(tip);
   }
 
   /**
@@ -1980,7 +1971,6 @@ class PluginApi {
    */
   removeDefaultQuickSearchRandomTips() {
     removeDefaultQuickSearchRandomTips();
-    removeWidgetDefaultQuickSearchRandomTips();
   }
 
   /**
