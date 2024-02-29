@@ -3,6 +3,7 @@ import { action, computed } from "@ember/object";
 import { schedule, scheduleOnce } from "@ember/runloop";
 import { inject as service } from "@ember/service";
 import ItsATrap from "@discourse/itsatrap";
+import { getDefaultComposerImplementation } from "discourse/lib/composer/extensions";
 import $ from "jquery";
 import { emojiSearch, isSkinTonableEmoji } from "pretty-text/emoji";
 import { translations } from "pretty-text/emoji/data";
@@ -293,6 +294,15 @@ export default Component.extend(TextareaTextManipulation, {
     this._super(...arguments);
 
     this.register = getRegister(this);
+
+    if (!this.composerImpl) {
+      this.composerImpl = getDefaultComposerImplementation();
+    }
+  },
+
+  _updateElementRef() {
+    this._textarea = this.element.querySelector(".d-editor-input");
+    this._$textarea = $(this._textarea);
   },
 
   didInsertElement() {
@@ -300,10 +310,11 @@ export default Component.extend(TextareaTextManipulation, {
 
     this._previewMutationObserver = this._disablePreviewTabIndex();
 
-    this._textarea = this.element.querySelector("textarea.d-editor-input");
+    // TODO this isn't necessarily a textarea anymore, we're reusing .d-editor-input for convenience
+    this._textarea = this.element.querySelector(".d-editor-input");
     this._$textarea = $(this._textarea);
-    this._applyEmojiAutocomplete(this._$textarea);
-    this._applyHashtagAutocomplete(this._$textarea);
+    this._applyEmojiAutocomplete();
+    this._applyHashtagAutocomplete();
 
     scheduleOnce("afterRender", this, this._readyNow);
 
@@ -509,14 +520,16 @@ export default Component.extend(TextareaTextManipulation, {
       discourseDebounce(this, this._updatePreview, 30);
     }
   },
-
+  // TODO clean-up
+  @observes("composerImpl.key")
   _applyHashtagAutocomplete() {
+    this._updateElementRef();
     setupHashtagAutocomplete(
       this.site.hashtag_configurations["topic-composer"],
       this._$textarea,
       this.siteSettings,
       {
-        textManipulationImpl: this.composerImpl.textManipulationImpl,
+        textManipulationImpl: new this.composerImpl.textManipulationImpl(this._$textarea[0]),
         afterComplete: (value) => {
           this.set("value", value);
           schedule("afterRender", this, this.focusTextArea);
@@ -525,13 +538,19 @@ export default Component.extend(TextareaTextManipulation, {
     );
   },
 
-  _applyEmojiAutocomplete($textarea) {
+  // TODO clean-up
+  @observes("composerImpl.key")
+  _applyEmojiAutocomplete() {
     if (!this.siteSettings.enable_emoji) {
       return;
     }
 
+    this._updateElementRef();
+
+    const $textarea = this._$textarea;
+
     $textarea.autocomplete({
-      textManipulationImpl: this.composerImpl.textManipulationImpl,
+      textManipulationImpl: new this.composerImpl.textManipulationImpl($textarea[0]),
       template: findRawTemplate("emoji-selector-autocomplete"),
       key: ":",
       afterComplete: (text) => {
@@ -539,10 +558,12 @@ export default Component.extend(TextareaTextManipulation, {
         schedule("afterRender", this, this.focusTextArea);
       },
 
-      onKeyUp: (text, cp) => {
-        if (this.composerImpl.textManipulationImpl.inCodeBlock($textarea)) {
+      onKeyUp: (text, cp, { inCodeBlock }) => {
+        if (inCodeBlock($textarea)) {
           return false;
         }
+
+        console.log(text)
 
         const matches =
           /(?:^|[\s.\?,@\/#!%&*;:\[\]{}=\-_()])(:(?!:).?[\w-]*:?(?!:)(?:t\d?)?:?) ?$/gi.exec(

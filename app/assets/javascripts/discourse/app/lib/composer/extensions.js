@@ -1,11 +1,13 @@
-import { textAreaManipulationImpl } from "discourse/lib/autocomplete";
+import { TextAreaAutocomplete } from "discourse/lib/autocomplete";
+
+const COMPOSER_DEFAULT = "default";
 
 const composerImplementations = {
   default: {
-    key: "default",
+    key: COMPOSER_DEFAULT,
     name: "Default", // TODO i18n
     handleExtension() {},
-    textManipulationImpl: textAreaManipulationImpl,
+    textManipulationImpl: TextAreaAutocomplete,
     allowPreview: true,
   },
 };
@@ -32,4 +34,8 @@ export function getComposerImplementationCount() {
 
 export function getComposerImplementationList() {
   return Object.values(composerImplementations);
+}
+
+export function getDefaultComposerImplementation() {
+  return getComposerImplementation(COMPOSER_DEFAULT);
 }

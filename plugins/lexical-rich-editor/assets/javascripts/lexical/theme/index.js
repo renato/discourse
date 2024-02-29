@@ -25,6 +25,7 @@ const theme = {
   },
   image: "editor-image",
   link: "editor-link",
+  hashtag: "editor-hashtag hashtag-cooked",
   text: {
     bold: "editor-text-bold",
     italic: "editor-text-italic",

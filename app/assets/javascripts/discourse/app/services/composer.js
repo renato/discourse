@@ -17,8 +17,8 @@ import {
 } from "discourse/helpers/slow-mode";
 import { customPopupMenuOptions } from "discourse/lib/composer/custom-popup-menu-options";
 import {
-  getComposerImplementation,
   getComposerImplementationList,
+  getDefaultComposerImplementation,
 } from "discourse/lib/composer/extensions";
 import prepareFormTemplateData, {
   getFormTemplateObject,
@@ -135,7 +135,7 @@ export default class ComposerService extends Service {
   @reads("currentUser.whisperer") whisperer;
   @and("model.creatingTopic", "isStaffUser") canUnlistTopic;
   @or("replyingToWhisper", "model.whisper") isWhispering;
-  _composerImpl = getComposerImplementation("default");
+  _composerImpl = getDefaultComposerImplementation();
 
   get topicController() {
     return getOwnerWithFallback(this).lookup("controller:topic");

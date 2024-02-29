@@ -152,7 +152,8 @@ export default Component.extend(ComposerUploadUppy, {
   @observes("focusTarget")
   setFocus() {
     if (this.focusTarget === "editor") {
-      this.composerImpl.textManipulationImpl.putCursorAtEnd(
+      // TODO
+      this.textManipulationImpl.putCursorAtEnd(
         this.element.querySelector("textarea")
       );
     }
@@ -219,7 +220,7 @@ export default Component.extend(ComposerUploadUppy, {
 
     if (this.siteSettings.enable_mentions) {
       $input.autocomplete({
-        textManipulationImpl: this.composerImpl.textManipulationImpl,
+        textManipulationImpl: this.textManipulationImpl,
         template: findRawTemplate("user-selector-autocomplete"),
         dataSource: (term) => {
           destroyUserStatuses();
@@ -247,17 +248,17 @@ export default Component.extend(ComposerUploadUppy, {
 
   @on("didInsertElement")
   _composerEditorInit() {
+    const editorInput = this.element.querySelector(".d-editor-input");
+
+    this.textManipulationImpl = new this.composerImpl.textManipulationImpl(editorInput);
     this._initializeMentionsAutocomplete();
 
-    this.element
-      .querySelector(".d-editor-input")
-      ?.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
+    editorInput.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
 
     // Focus on the body unless we have a title
     if (!this.get("composer.canEditTitle")) {
-      this.composerImpl.textManipulationImpl.putCursorAtEnd(
-        this.element.querySelector(".d-editor-input")
-      );
+      // TODO
+      this.textManipulationImpl.putCursorAtEnd(editorInput);
     }
 
     if (this.allowUpload) {

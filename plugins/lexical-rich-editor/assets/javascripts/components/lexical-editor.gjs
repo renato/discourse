@@ -5,6 +5,7 @@ import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import willDestroy from "@ember/render-modifiers/modifiers/will-destroy";
 import { guidFor } from "@ember/object/internals";
 import { mergeRegister } from "@lexical/utils";
+import Editor from "../lexical/editor";
 import * as tests from "./test-markdown";
 import { $convertToMarkdown } from "../lexical/exporter";
 import {
@@ -28,27 +29,21 @@ export default class LexicalEditor extends Component {
   @service menu;
   @service siteSettings;
 
-  constructor() {
-    super(...arguments);
-
-    this.editor = this.args.initialize().editor;
-  }
-
   @action
   setup() {
+    this.editor = new Editor();
+    const { engine } = this.editor;
+
+    const contentEditableElement = document.getElementById(this.lexicalElementId);
+    engine.setRootElement(contentEditableElement);
+
+    this._decorators = engine.getDecorators();
+
     // TODO this should live somewhere else, probably in lexical/plugins
     // TODO listen to upload-started, upload-cancelled and upload-error to create a placeholder
     this.appEvents.on("composer:upload-success", (fileName, upload) => {
       dispatchInsertCommand(upload, this.editor.engine);
     });
-
-    const contentEditableElement = document.getElementById(
-      this.lexicalElementId
-    );
-
-    const { engine } = this.editor;
-    engine.setRootElement(contentEditableElement);
-    this._decorators = engine.getDecorators();
 
     this.teardownRegisters = mergeRegister(
       engine.registerUpdateListener(({ editorState }) => {
@@ -70,7 +65,6 @@ export default class LexicalEditor extends Component {
         plugin(this.editor.engine, {
           siteSettings: this.siteSettings,
           menu: this.menu,
-          composer: this.args.composer,
         })
       )
     );
@@ -80,7 +74,7 @@ export default class LexicalEditor extends Component {
 
   @bind
   async importFromValue() {
-    const value = tests.test2;//this.args.value;
+    const value = tests.test2; //this.args.value;
 
     const tokens = await markdownItTokens(value);
 
@@ -93,6 +87,7 @@ export default class LexicalEditor extends Component {
   teardown() {
     this.teardownRegisters?.();
     this.editor.teardown?.();
+    this.args.onDestroy?.(this.element);
   }
 
   get decorators() {

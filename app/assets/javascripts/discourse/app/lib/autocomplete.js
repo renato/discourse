@@ -18,7 +18,7 @@ import discourseLater from "discourse-common/lib/later";
 
 export const SKIP = "skip";
 export const CANCELLED_STATUS = "__CANCELLED";
-const allowedLettersRegex = /[\s\t\[\{\(\/]/;
+export const allowedLettersRegex = /[\s\t\[\{\(\/]/;
 let _autoCompletePopper;
 
 const keys = {
@@ -49,11 +49,38 @@ const keys = {
 
 let inputTimeout;
 
-export const textAreaManipulationImpl = {
-  putCursorAtEnd,
-  getValue(me) {
-    return me.val();
-  },
+/**
+ * @interface AutocompleteInterface
+ */
+/**
+ * Checks if the input is in a code block.
+ * @function
+ * @name AutocompleteInterface#inCodeBlock
+ * @returns {boolean} - Whether the input is in a code block.
+ *
+ * Puts cursor at end
+ * @function
+ * @name AutocompleteInterface#putCursorAtEnd
+ *
+ * Gets the current text value.
+ * @function
+ * @name AutocompleteInterface#getValue
+ * @returns {string} - The current text value
+ *
+ */
+
+/**
+ * @implements {AutocompleteInterface}
+ */
+export class TextAreaAutocomplete {
+  context;
+  putCursorAtEnd = putCursorAtEnd;
+  getValue = (me) => me.val();
+
+  constructor(context) {
+    this.context = context;
+  }
+
   performAutocomplete({
     me,
     options,
@@ -67,7 +94,7 @@ export const textAreaManipulationImpl = {
 
     if (options.key) {
       if (options.onKeyUp && key !== options.key) {
-        let match = options.onKeyUp(me.val(), cp);
+        let match = options.onKeyUp(me.val(), cp, options.textManipulationImpl);
 
         if (match) {
           state.completeStart = cp - match[0].length;
@@ -94,7 +121,7 @@ export const textAreaManipulationImpl = {
         .substring(state.completeStart + (options.key ? 1 : 0), cp);
       updateAutoComplete(dataSource(term, options));
     }
-  },
+  }
 
   completeTerm({ me, guessCompletePosition, state, options, term }) {
     let text = me.val();
@@ -136,18 +163,18 @@ export const textAreaManipulationImpl = {
     setCaretPosition(me[0], newCaretPos);
 
     return text;
-  },
+  }
 
   getCaretPosition({ me, state }) {
     return me.caretPosition({
       pos: state.completeStart + 1,
     });
-  },
+  }
 
   inCodeBlock(textarea) {
     return inCodeBlock(textarea.value ?? textarea.val(), caretPosition(textarea));
-  },
-};
+  }
+}
 
 export default function (options) {
   if (this.length === 0) {
@@ -218,7 +245,7 @@ export default function (options) {
   const isInput = me[0].tagName === "INPUT" && !options.treatAsTextarea;
   let inputSelectedItems = [];
 
-  options.textManipulationImpl ??= textAreaManipulationImpl;
+  options.textManipulationImpl ??= new TextAreaAutocomplete(this[0]);
 
   function handlePaste() {
     discourseLater(() => me.trigger("keydown"), 50);
@@ -344,6 +371,7 @@ export default function (options) {
             state,
             options,
             term,
+            event,
           });
 
           if (options && options.afterComplete) {
