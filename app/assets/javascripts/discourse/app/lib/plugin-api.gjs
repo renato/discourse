@@ -55,6 +55,10 @@ import {
   registerAdminPluginConfigNav,
 } from "discourse/lib/admin-plugin-config-nav";
 import { addPopupMenuOption } from "discourse/lib/composer/custom-popup-menu-options";
+import {
+  registerComposer,
+  registerComposerExtension,
+} from "discourse/lib/composer/extensions";
 import { registerDesktopNotificationHandler } from "discourse/lib/desktop-notifications";
 import { downloadCalendar } from "discourse/lib/download-calendar";
 import { registerHashtagType } from "discourse/lib/hashtag-type-registry";
@@ -2903,6 +2907,14 @@ class PluginApi {
       .addProperty(userFieldProperty);
   }
 
+  registerComposer(composerImpl) {
+    registerComposer(composerImpl);
+  }
+
+  registerComposerExtension(composerKey, extensionImpl) {
+    registerComposerExtension(composerKey, extensionImpl);
+  }
+
   /**
    * Adds a custom button to the composer preview's image wrapper
    *
@@ -2951,6 +2963,14 @@ class PluginApi {
     }
 
     registerAdminPluginConfigNav(pluginId, mode, links);
+  }
+
+  registerComposer(composerImpl) {
+    registerComposer(composerImpl);
+  }
+
+  registerComposerExtension(composerKey, extensionImpl) {
+    registerComposerExtension(composerKey, extensionImpl);
   }
 }
 

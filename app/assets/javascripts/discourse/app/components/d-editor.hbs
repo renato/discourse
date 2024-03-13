@@ -56,18 +56,25 @@
         </div>
 
         <ConditionalLoadingSpinner @condition={{this.loading}} />
-        <DTextarea
-          @autocomplete="off"
-          @tabindex={{this.tabindex}}
-          @value={{this.value}}
-          @placeholder={{this.placeholderTranslated}}
-          @aria-label={{this.placeholderTranslated}}
-          @disabled={{this.disabled}}
-          @input={{this.change}}
-          @focusIn={{action "focusIn"}}
-          @focusOut={{action "focusOut"}}
-          class="d-editor-input"
-        />
+        {{#if this.hasNonDefaultComposer}}
+          <this.composerImpl.component
+            @value={{@value}}
+            @onChange={{this.handleValueChange}}
+          />
+        {{else}}
+          <DTextarea
+            @autocomplete="off"
+            @tabindex={{this.tabindex}}
+            @value={{this.value}}
+            @placeholder={{this.placeholderTranslated}}
+            @aria-label={{this.placeholderTranslated}}
+            @disabled={{this.disabled}}
+            @input={{this.change}}
+            @focusIn={{action "focusIn"}}
+            @focusOut={{action "focusOut"}}
+            class="d-editor-input"
+          />
+        {{/if}}
         <PopupInputTip @validation={{this.validation}} />
         <PluginOutlet
           @name="after-d-editor"

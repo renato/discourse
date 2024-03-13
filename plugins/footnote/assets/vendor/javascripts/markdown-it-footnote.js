@@ -4,7 +4,6 @@
 // Process footnotes
 //
 'use strict';
-
 ////////////////////////////////////////////////////////////////////////////////
 // Renderer partials
 
@@ -378,5 +377,5 @@ module.exports = function footnote_plugin(md) {
   md.core.ruler.after('inline', 'footnote_tail', footnote_tail);
 };
 
-},{}]},{},[1])(1)
+  },{}]},{},[1])(1)
 });

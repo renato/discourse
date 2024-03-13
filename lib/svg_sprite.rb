@@ -152,6 +152,7 @@ module SvgSprite
         grip-lines
         hand-point-right
         hands-helping
+        heading
         heart
         history
         home
@@ -180,6 +181,7 @@ module SvgSprite
         paint-brush
         palette
         paper-plane
+        paragraph
         pause
         pencil-alt
         play
@@ -212,6 +214,7 @@ module SvgSprite
         step-backward
         step-forward
         stream
+        strikethrough
         sync-alt
         sync
         table

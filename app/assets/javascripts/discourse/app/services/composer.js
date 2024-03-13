@@ -16,6 +16,10 @@ import {
   durationTextFromSeconds,
 } from "discourse/helpers/slow-mode";
 import { customPopupMenuOptions } from "discourse/lib/composer/custom-popup-menu-options";
+import {
+  getComposerImplementationList,
+  getDefaultComposerImplementation,
+} from "discourse/lib/composer/extensions";
 import prepareFormTemplateData, {
   getFormTemplateObject,
 } from "discourse/lib/form-template-validation";
@@ -124,7 +128,6 @@ export default class ComposerService extends Service {
   linkLookup = null;
   showPreview = true;
   composerHeight = null;
-
   @and("site.mobileView", "showPreview") forcePreview;
   @or("isWhispering", "model.unlistTopic") whisperOrUnlistTopic;
   @alias("site.categoriesList") categories;
@@ -133,6 +136,7 @@ export default class ComposerService extends Service {
   @reads("currentUser.whisperer") whisperer;
   @and("model.creatingTopic", "isStaffUser") canUnlistTopic;
   @or("replyingToWhisper", "model.whisper") isWhispering;
+  _composerImpl = getDefaultComposerImplementation();
 
   get topicController() {
     return getOwnerWithFallback(this).lookup("controller:topic");
@@ -191,6 +195,26 @@ export default class ComposerService extends Service {
 
   set formTemplateInitialValues(values) {
     this.set("_formTemplateInitialValues", values);
+  }
+
+  @computed
+  get composerImpl() {
+    return this._composerImpl;
+  }
+
+  set composerImpl(impl) {
+    this.set("_composerImpl", impl);
+  }
+
+  @action
+  toggleComposerImpl() {
+    this.composerImpl = getComposerImplementationList().find(
+      (impl) => impl.key !== this.composerImpl.key
+    );
+
+    if (!this.composerImpl.allowPreview) {
+      this.set("showPreview", false);
+    }
   }
 
   @action
