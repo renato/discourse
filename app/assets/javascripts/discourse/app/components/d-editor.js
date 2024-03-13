@@ -1,3 +1,4 @@
+import { tracked } from "@glimmer/tracking";
 import Component from "@ember/component";
 import { action, computed } from "@ember/object";
 import { schedule, scheduleOnce } from "@ember/runloop";
@@ -11,6 +12,7 @@ import { Promise } from "rsvp";
 import InsertHyperlink from "discourse/components/modal/insert-hyperlink";
 import { ajax } from "discourse/lib/ajax";
 import { SKIP } from "discourse/lib/autocomplete";
+import { getDefaultComposerImplementation } from "discourse/lib/composer/extensions";
 import { setupHashtagAutocomplete } from "discourse/lib/hashtag-autocomplete";
 import { linkSeenHashtagsInContext } from "discourse/lib/hashtag-decorator";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
@@ -19,11 +21,8 @@ import { linkSeenMentions } from "discourse/lib/link-mentions";
 import { loadOneboxes } from "discourse/lib/load-oneboxes";
 import { emojiUrlFor, generateCookFunction } from "discourse/lib/text";
 import { siteDir } from "discourse/lib/text-direction";
-import {
-  caretPosition,
-  inCodeBlock,
-  translateModKey,
-} from "discourse/lib/utilities";
+import { translateModKey } from "discourse/lib/utilities";
+import TextManipulationDelegate from "discourse/mixins/text-manipulation-delegate";
 import TextareaTextManipulation, {
   getHead,
 } from "discourse/mixins/textarea-text-manipulation";
@@ -233,7 +232,7 @@ export function onToolbarCreate(func) {
   addToolbarCallback(func);
 }
 
-export default Component.extend(TextareaTextManipulation, {
+export default Component.extend(TextManipulationDelegate, {
   emojiStore: service("emoji-store"),
   modal: service(),
 
@@ -247,6 +246,8 @@ export default Component.extend(TextareaTextManipulation, {
   isEditorFocused: false,
   processPreview: true,
   composerFocusSelector: "#reply-control .d-editor-input",
+  @tracked
+  textManipulationImpl: null,
 
   selectedFormTemplateId: computed("formTemplateIds", {
     get() {
@@ -267,6 +268,11 @@ export default Component.extend(TextareaTextManipulation, {
     this.selectedFormTemplateId = formTemplateId;
   },
 
+  @action
+  handleValueChange(value) {
+    this.set("value", value);
+  },
+
   @discourseComputed("formTemplateIds", "replyingToTopic", "editingPost")
   showFormTemplateForm(formTemplateIds, replyingToTopic, editingPost) {
     // TODO(@keegan): Remove !editingPost once we add edit/draft support for form templates
@@ -275,6 +281,11 @@ export default Component.extend(TextareaTextManipulation, {
     }
 
     return false;
+  },
+
+  @discourseComputed("composerImpl.key")
+  hasNonDefaultComposer() {
+    return this.composerImpl.key !== "default";
   },
 
   @discourseComputed("placeholder")
@@ -297,6 +308,21 @@ export default Component.extend(TextareaTextManipulation, {
     this._super(...arguments);
 
     this.register = getRegister(this);
+
+    if (!this.composerImpl) {
+      this.composerImpl = getDefaultComposerImplementation();
+    }
+  },
+
+  _updateElementRef() {
+    this._textarea = this.element.querySelector(".d-editor-input");
+    this._$textarea = $(this._textarea);
+
+    if (this.textManipulationImpl?.context !== this._textarea) {
+      this.textManipulationImpl = new this.composerImpl.textManipulationImpl(
+        this._textarea
+      );
+    }
   },
 
   didInsertElement() {
@@ -304,10 +330,11 @@ export default Component.extend(TextareaTextManipulation, {
 
     this._previewMutationObserver = this._disablePreviewTabIndex();
 
-    this._textarea = this.element.querySelector("textarea.d-editor-input");
+    // TODO this isn't necessarily a textarea anymore, we're reusing .d-editor-input for convenience
+    this._textarea = this.element.querySelector(".d-editor-input");
     this._$textarea = $(this._textarea);
-    this._applyEmojiAutocomplete(this._$textarea);
-    this._applyHashtagAutocomplete(this._$textarea);
+    this._applyEmojiAutocomplete();
+    this._applyHashtagAutocomplete();
 
     scheduleOnce("afterRender", this, this._readyNow);
 
@@ -565,13 +592,16 @@ export default Component.extend(TextareaTextManipulation, {
       discourseDebounce(this, this._updatePreview, 30);
     }
   },
-
+  // TODO clean-up
+  @observes("composerImpl.key")
   _applyHashtagAutocomplete() {
+    this._updateElementRef();
     setupHashtagAutocomplete(
       this.site.hashtag_configurations["topic-composer"],
       this._$textarea,
       this.siteSettings,
       {
+        textManipulationImpl: this.textManipulationImpl,
         afterComplete: (value) => {
           this.set("value", value);
           schedule("afterRender", this, this.focusTextArea);
@@ -580,12 +610,19 @@ export default Component.extend(TextareaTextManipulation, {
     );
   },
 
-  _applyEmojiAutocomplete($textarea) {
+  // TODO clean-up
+  @observes("composerImpl.key")
+  _applyEmojiAutocomplete() {
     if (!this.siteSettings.enable_emoji) {
       return;
     }
 
+    this._updateElementRef();
+
+    const $textarea = this._$textarea;
+
     $textarea.autocomplete({
+      textManipulationImpl: this.textManipulationImpl,
       template: findRawTemplate("emoji-selector-autocomplete"),
       key: ":",
       afterComplete: (text) => {
@@ -698,7 +735,7 @@ export default Component.extend(TextareaTextManipulation, {
       },
 
       triggerRule: async (textarea) =>
-        !(await inCodeBlock(textarea.value, caretPosition(textarea))),
+        !(await this.textManipulationImpl.inCodeBlock(textarea)),
     });
   },
 

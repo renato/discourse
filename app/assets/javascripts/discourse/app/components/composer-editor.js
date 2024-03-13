@@ -16,7 +16,6 @@ import {
   linkSeenMentions,
 } from "discourse/lib/link-mentions";
 import { loadOneboxes } from "discourse/lib/load-oneboxes";
-import putCursorAtEnd from "discourse/lib/put-cursor-at-end";
 import { authorizesOneOrMoreImageExtensions } from "discourse/lib/uploads";
 import userSearch from "discourse/lib/user-search";
 import {
@@ -24,11 +23,7 @@ import {
   initUserStatusHtml,
   renderUserStatusHtml,
 } from "discourse/lib/user-status-on-autocomplete";
-import {
-  caretPosition,
-  formatUsername,
-  inCodeBlock,
-} from "discourse/lib/utilities";
+import { formatUsername } from "discourse/lib/utilities";
 import ComposerUploadUppy from "discourse/mixins/composer-upload-uppy";
 import Composer from "discourse/models/composer";
 import { isTesting } from "discourse-common/config/environment";
@@ -55,7 +50,7 @@ import I18n from "discourse-i18n";
 // Group 3 is optional. group 4 can match images with or without a markdown title.
 // All matches are whitespace tolerant as long it's still valid markdown.
 // If the image is inside a code block, we'll ignore it `(?!(.*`))`.
-const IMAGE_MARKDOWN_REGEX =
+export const IMAGE_MARKDOWN_REGEX =
   /!\[(.*?)\|(\d{1,4}x\d{1,4})(,\s*\d{1,3}%)?(.*?)\]\((upload:\/\/.*?)\)(?!(.*`))/g;
 
 let uploadHandlers = [];
@@ -159,7 +154,10 @@ export default Component.extend(ComposerUploadUppy, {
   @observes("focusTarget")
   setFocus() {
     if (this.focusTarget === "editor") {
-      putCursorAtEnd(this.element.querySelector("textarea"));
+      // TODO
+      this.textManipulationImpl.putCursorAtEnd(
+        this.element.querySelector("textarea")
+      );
     }
   },
 
@@ -217,14 +215,19 @@ export default Component.extend(ComposerUploadUppy, {
       input?.focus();
     });
   },
+  @observes("composerImpl.key")
+  _initializeMentionsAutocomplete() {
+    const editorInput = this.element.querySelector(".d-editor-input");
+    this.textManipulationImpl = new this.composerImpl.textManipulationImpl(
+      editorInput
+    );
 
-  @on("didInsertElement")
-  _composerEditorInit() {
+    // TODO events cleanup?
     const input = this.element.querySelector(".d-editor-input");
-    const preview = this.element.querySelector(".d-editor-preview-wrapper");
 
     if (this.siteSettings.enable_mentions) {
       $(input).autocomplete({
+        textManipulationImpl: this.textManipulationImpl,
         template: findRawTemplate("user-selector-autocomplete"),
         dataSource: (term) => {
           destroyUserStatuses();
@@ -243,10 +246,18 @@ export default Component.extend(ComposerUploadUppy, {
         transformComplete: (v) => v.username || v.name,
         afterComplete: this._afterMentionComplete,
         triggerRule: async (textarea) =>
-          !(await inCodeBlock(textarea.value, caretPosition(textarea))),
+          !(await this.textManipulationImpl.inCodeBlock(textarea)),
         onClose: destroyUserStatuses,
       });
     }
+  },
+
+  @on("didInsertElement")
+  _composerEditorInit() {
+    const input = this.element.querySelector(".d-editor-input");
+    const preview = this.element.querySelector(".d-editor-preview-wrapper");
+
+    this._initializeMentionsAutocomplete();
 
     input?.addEventListener(
       "scroll",
@@ -257,7 +268,8 @@ export default Component.extend(ComposerUploadUppy, {
 
     // Focus on the body unless we have a title
     if (!this.get("composer.canEditTitle")) {
-      putCursorAtEnd(input);
+      // TODO
+      this.textManipulationImpl.putCursorAtEnd(input);
     }
 
     if (this.allowUpload) {

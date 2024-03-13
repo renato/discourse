@@ -1,0 +1,77 @@
+.d-editor-lexical__editable {
+  outline: 0;
+  padding: 0;
+  flex: 1;
+  height: 100%;
+  max-height: 100%;
+
+  // the above also applies to CodeEditor; below is exclusive to the composer
+  // TODO avoid nesting. use a different class instead
+  &.d-editor-input {
+    padding: 0 0.5em;
+  }
+}
+
+.d-editor-lexical__container {
+  overflow-y: auto;
+  border: 1px solid var(--primary-400);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  height: 100%;
+  max-height: min(600px, 75vh);
+}
+
+.d-editor-toolbar--bottom {
+  background-color: var(--secondary);
+  position: absolute;
+  bottom: 1px;
+  left: 1px;
+}
+
+.d-editor-lexical__container:focus-within {
+  border: 1px solid var(--tertiary);
+  outline: 1px solid var(--tertiary);
+}
+
+.d-editor-toolbar-button {
+  &.--active,
+  &.--active:hover {
+    background-color: var(--secondary-very-high);
+  }
+}
+
+.d-editor-toolbar-dropdown__action-btn.btn {
+  width: 100%;
+  justify-content: start;
+
+  &.--active {
+    background-color: var(--secondary-very-high);
+  }
+}
+
+.d-editor-toolbar-dropdown {
+  &__list {
+    list-style: none;
+    margin: 0;
+  }
+}
+
+[data-identifier="d-editor-toolbar-dropdown__menu"],
+[data-identifier="d-editor-floating-toolbar"],
+[data-identifier="d-editor-mention-menu"] {
+  z-index: z("modal", "overlay");
+}
+
+.d-editor-mention-menu {
+  max-height: min(400px, 50vh);
+
+  // TODO overriding autocomplete's styles, ideally we wouldn't reuse it
+  position: unset !important;
+  border: 0;
+  border-radius: 0;
+  ul li:last-of-type a,
+  ul li:first-of-type a {
+    border-radius: 0;
+  }
+}

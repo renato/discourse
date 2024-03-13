@@ -9,6 +9,7 @@ import DropTarget from "@uppy/drop-target";
 import XHRUpload from "@uppy/xhr-upload";
 import { cacheShortUploadUrl } from "pretty-text/upload-short-url";
 import { updateCsrfToken } from "discourse/lib/ajax";
+import { getDefaultComposerImplementation } from "discourse/lib/composer/extensions";
 import {
   bindFileInputChangeListener,
   displayErrorForBulkUpload,
@@ -42,10 +43,15 @@ import I18n from "discourse-i18n";
 export default Mixin.create(ExtendableUploader, UppyS3Multipart, {
   dialog: service(),
   session: service(),
+  composer: service(),
 
   uploadRootPath: "/uploads",
   uploadTargetBound: false,
-  useUploadPlaceholders: true,
+  get useUploadPlaceholders() {
+    return (
+      this.composer.get("composerImpl") === getDefaultComposerImplementation()
+    );
+  },
 
   @bind
   _cancelSingleUpload(data) {
@@ -298,12 +304,13 @@ export default Mixin.create(ExtendableUploader, UppyS3Multipart, {
               extension: file.extension,
             })
           );
-          const placeholder = this._uploadPlaceholder(file);
-          this.placeholders[file.id] = {
-            uploadPlaceholder: placeholder,
-          };
 
           if (this.useUploadPlaceholders) {
+            const placeholder = this._uploadPlaceholder(file);
+            this.placeholders[file.id] = {
+              uploadPlaceholder: placeholder,
+            };
+
             this.appEvents.trigger(
               `${this.composerEventPrefix}:insert-text`,
               placeholder
@@ -468,40 +475,44 @@ export default Mixin.create(ExtendableUploader, UppyS3Multipart, {
         );
       });
 
-    this._onPreProcessProgress((file) => {
-      let placeholderData = this.placeholders[file.id];
-      placeholderData.processingPlaceholder = `[${I18n.t(
-        "processing_filename",
-        {
-          filename: file.name,
-        }
-      )}]()\n`;
+    if (this.useUploadPlaceholders) {
+      this._onPreProcessProgress((file) => {
+        let placeholderData = this.placeholders[file.id];
+        placeholderData.processingPlaceholder = `[${I18n.t(
+          "processing_filename",
+          {
+            filename: file.name,
+          }
+        )}]()\n`;
 
-      this.appEvents.trigger(
-        `${this.composerEventPrefix}:replace-text`,
-        placeholderData.uploadPlaceholder,
-        placeholderData.processingPlaceholder
-      );
+        this.appEvents.trigger(
+          `${this.composerEventPrefix}:replace-text`,
+          placeholderData.uploadPlaceholder,
+          placeholderData.processingPlaceholder
+        );
 
-      // Safari applies user-defined replacements to text inserted programmatically.
-      // One of the most common replacements is ... -> …, so we take care of the case
-      // where that transformation has been applied to the original placeholder
-      this.appEvents.trigger(
-        `${this.composerEventPrefix}:replace-text`,
-        placeholderData.uploadPlaceholder.replace("...", "…"),
-        placeholderData.processingPlaceholder
-      );
-    });
+        // Safari applies user-defined replacements to text inserted programmatically.
+        // One of the most common replacements is ... -> …, so we take care of the case
+        // where that transformation has been applied to the original placeholder
+        this.appEvents.trigger(
+          `${this.composerEventPrefix}:replace-text`,
+          placeholderData.uploadPlaceholder.replace("...", "…"),
+          placeholderData.processingPlaceholder
+        );
+      });
+    }
 
     this._onPreProcessComplete(
       (file) => {
         run(() => {
-          let placeholderData = this.placeholders[file.id];
-          this.appEvents.trigger(
-            `${this.composerEventPrefix}:replace-text`,
-            placeholderData.processingPlaceholder,
-            placeholderData.uploadPlaceholder
-          );
+          if (this.useUploadPlaceholders) {
+            let placeholderData = this.placeholders[file.id];
+            this.appEvents.trigger(
+              `${this.composerEventPrefix}:replace-text`,
+              placeholderData.processingPlaceholder,
+              placeholderData.uploadPlaceholder
+            );
+          }
         });
       },
       () => {

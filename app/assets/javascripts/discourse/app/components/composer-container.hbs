@@ -131,6 +131,7 @@
           @formTemplateIds={{this.composer.formTemplateIds}}
           @formTemplateInitialValues={{this.composer.formTemplateInitialValues}}
           @onSelectFormTemplate={{this.composer.onSelectFormTemplate}}
+          @composerImpl={{this.composer.composerImpl}}
         >
           <div class="composer-fields">
             <PluginOutlet
@@ -308,6 +309,19 @@
             </span>
           </div>
 
+          {{! TODO: this switcher can be conditionally rendered, we may want to allow more control via plugin APIs over how a given composer impl is selected }}
+          {{#if this.showComposerImplMenu}}
+            TODO: DMenu with >2 options
+          {{else if this.showComposerImplSwitcher}}
+            <DButton
+              @action={{this.composer.toggleComposerImpl}}
+              @translatedAriaLabel={{this.toggleComposerImplLabel}}
+              @icon="pencil-alt"
+              class="hide-preview"
+              @translatedLabel={{this.toggleComposerImplLabel}}
+            />
+          {{/if}}
+
           {{#if this.site.mobileView}}
             <span>
               <PluginOutlet
@@ -398,16 +412,18 @@
             {{/if}}
           </div>
 
-          {{#if this.site.desktopView}}
-            <DButton
-              @action={{this.composer.togglePreview}}
-              @translatedTitle={{this.composer.toggleText}}
-              @icon="angle-double-left"
-              class={{concat-class
-                "btn-transparent btn-mini-toggle toggle-preview"
-                (unless this.composer.showPreview "active")
-              }}
-            />
+          {{#if this.composer.composerImpl.allowPreview}}
+            {{#if this.site.desktopView}}
+              <DButton
+                @action={{this.composer.togglePreview}}
+                @translatedTitle={{this.composer.toggleText}}
+                @icon="angle-double-left"
+                class={{concat-class
+                  "btn-transparent btn-mini-toggle toggle-preview"
+                  (unless this.composer.showPreview "active")
+                }}
+              />
+            {{/if}}
           {{/if}}
         </div>
       </div>

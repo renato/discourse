@@ -73,3 +73,39 @@ loaderShim("@messageformat/runtime", () =>
 loaderShim("@messageformat/runtime/lib/cardinals", () =>
   importSync("@messageformat/runtime/lib/cardinals")
 );
+
+// TODO this is necessary so details/footnotes/spoiler plugins can import Lexical classes
+// And, of course, the lexical-rich-editor plugin itself.
+// In an ideal world, theme components will be able to import packages
+loaderShim("lexical", () => importSync("lexical"));
+loaderShim("@lexical/plain-text", () => importSync("@lexical/plain-text"));
+loaderShim("@lexical/history", () => importSync("@lexical/history"));
+loaderShim("@lexical/utils", () => importSync("@lexical/utils"));
+loaderShim("@lexical/code", () => importSync("@lexical/code"));
+loaderShim("@lexical/selection", () => importSync("@lexical/selection"));
+
+loaderShim("@lexical/link", () => importSync("@lexical/link"));
+loaderShim("@lexical/list", () => importSync("@lexical/list"));
+loaderShim("@lexical/rich-text", () => importSync("@lexical/rich-text"));
+loaderShim("@lexical/table", () => importSync("@lexical/table"));
+loaderShim("@lexical/text", () => importSync("@lexical/text"));
+loaderShim("@lexical/markdown", () => importSync("@lexical/markdown"));
+loaderShim("@lexical/hashtag", () => importSync("@lexical/hashtag"));
+loaderShim("@lexical/clipboard", () => importSync("@lexical/clipboard"));
+loaderShim("mdast-util-to-markdown", () =>
+  importSync("mdast-util-to-markdown")
+);
+
+loaderShim("prismjs/components/prism-yaml", () =>
+  importSync("prismjs/components/prism-yaml")
+);
+loaderShim("prismjs/components/prism-scss", () =>
+  importSync("prismjs/components/prism-scss")
+);
+
+loaderShim("prismjs/components/prism-yaml", () =>
+  importSync("prismjs/components/prism-yaml")
+);
+loaderShim("prismjs/components/prism-scss", () =>
+  importSync("prismjs/components/prism-scss")
+);

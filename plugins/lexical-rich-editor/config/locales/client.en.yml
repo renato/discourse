@@ -1,0 +1,7 @@
+en:
+  js:
+    composer:
+      lexical:
+        nodes:
+          unknown_label: "Unknown"
+          raw_label: "Raw"

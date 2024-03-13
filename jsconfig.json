@@ -27,6 +27,9 @@
       "float-kit/*": [
         "./app/assets/javascripts/float-kit/addon/*"
       ],
+      "lexical-editor/*": [
+        "./app/assets/javascripts/lexical-editor/addon/*"
+      ],
       "truth-helpers/*": [
         "./app/assets/javascripts/truth-helpers/addon/*"
       ],
@@ -79,6 +82,7 @@
     "./app/assets/javascripts/pretty-text/addon",
     "./app/assets/javascripts/select-kit/addon",
     "./app/assets/javascripts/float-kit/addon",
+    "./app/assets/javascripts/lexical-editor/addon",
     "./app/assets/javascripts/truth-helpers/addon",
     "./app/assets/javascripts/dialog-holder/addon",
     "./plugins/chat/assets/javascripts",
