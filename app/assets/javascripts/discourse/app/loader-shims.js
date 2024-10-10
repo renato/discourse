@@ -74,3 +74,22 @@ loaderShim("@messageformat/runtime/lib/cardinals", () =>
   importSync("@messageformat/runtime/lib/cardinals")
 );
 loaderShim("@ember/string", () => importSync("@ember/string"));
+
+// ProseMirror
+loaderShim("prosemirror-state", () => importSync("prosemirror-state"));
+loaderShim("prosemirror-view", () => importSync("prosemirror-view"));
+loaderShim("prosemirror-model", () => importSync("prosemirror-model"));
+loaderShim("prosemirror-schema-list", () =>
+  importSync("prosemirror-schema-list")
+);
+loaderShim("prosemirror-inputrules", () =>
+  importSync("prosemirror-inputrules")
+);
+loaderShim("prosemirror-commands", () => importSync("prosemirror-commands"));
+loaderShim("prosemirror-history", () => importSync("prosemirror-history"));
+loaderShim("prosemirror-keymap", () => importSync("prosemirror-keymap"));
+loaderShim("prosemirror-dropcursor", () =>
+  importSync("prosemirror-dropcursor")
+);
+loaderShim("prosemirror-gapcursor", () => importSync("prosemirror-gapcursor"));
+loaderShim("prosemirror-markdown", () => importSync("prosemirror-markdown"));

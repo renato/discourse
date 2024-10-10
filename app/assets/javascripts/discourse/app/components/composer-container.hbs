@@ -131,6 +131,7 @@
           @formTemplateIds={{this.composer.formTemplateIds}}
           @formTemplateInitialValues={{this.composer.formTemplateInitialValues}}
           @onSelectFormTemplate={{this.composer.onSelectFormTemplate}}
+          @composerImpl={{this.composer.composerImpl}}
         >
           <div class="composer-fields">
             <PluginOutlet
@@ -308,6 +309,38 @@
             </span>
           </div>
 
+          {{! TODO: this is just a simple way to switch between implementations }}
+          {{#if this.showComposerImplMenu}}
+            <DMenu
+              @inline={{true}}
+              @identifier="composer-picker-menu"
+              @icon="pen"
+              @label={{this.composer.composerImpl.name}}
+              @placement="top-start"
+              class="btn-small"
+            >
+              <:content>
+                <DropdownMenu as |dropdown|>
+                  {{#each this.composerList as |impl|}}
+                    <dropdown.item>
+                      <DButton
+                        @action={{fn this.setComposerImpl impl}}
+                        @translatedLabel={{impl.name}}
+                        @disabled={{eq this.composer.composerImpl impl}}
+                      />
+                    </dropdown.item>
+                  {{/each}}
+                </DropdownMenu>
+              </:content>
+            </DMenu>
+
+          {{else if this.showComposerImplSwitcher}}
+            <ComposerToggleSwitch
+              @state={{not (eq this.composer.composerImpl.key "default")}}
+              {{on "click" this.toggleComposerImpl}}
+            />
+          {{/if}}
+
           {{#if this.site.mobileView}}
             <span>
               <PluginOutlet
@@ -398,16 +431,18 @@
             {{/if}}
           </div>
 
-          {{#if this.site.desktopView}}
-            <DButton
-              @action={{this.composer.togglePreview}}
-              @translatedTitle={{this.composer.toggleText}}
-              @icon="angles-left"
-              class={{concat-class
-                "btn-transparent btn-mini-toggle toggle-preview"
-                (unless this.composer.showPreview "active")
-              }}
-            />
+          {{#if this.composer.composerImpl.allowPreview}}
+            {{#if this.site.desktopView}}
+              <DButton
+                @action={{this.composer.togglePreview}}
+                @translatedTitle={{this.composer.toggleText}}
+                @icon="angles-left"
+                class={{concat-class
+                  "btn-transparent btn-mini-toggle toggle-preview"
+                  (unless this.composer.showPreview "active")
+                }}
+              />
+            {{/if}}
           {{/if}}
         </div>
       </div>

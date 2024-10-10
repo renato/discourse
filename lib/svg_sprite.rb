@@ -105,6 +105,7 @@ module SvgSprite
         fab-instagram
         fab-linkedin-in
         fab-linux
+        fab-markdown
         fab-threads
         fab-threads-square
         fab-twitter
@@ -218,6 +219,7 @@ module SvgSprite
         square-full
         square-plus
         star
+        t
         table
         table-cells
         table-columns

@@ -33,6 +33,9 @@
       "dialog-holder/*": [
         "./app/assets/javascripts/dialog-holder/addon/*"
       ],
+      "composer-kit/*": [
+        "./app/assets/javascripts/composer-kit/addon/*"
+      ],
       "discourse/plugins/chat/*": [
         "./plugins/chat/assets/javascripts/*",
         "./plugins/chat/test/javascripts/*"
@@ -81,6 +84,7 @@
     "./app/assets/javascripts/float-kit/addon",
     "./app/assets/javascripts/truth-helpers/addon",
     "./app/assets/javascripts/dialog-holder/addon",
+    "./app/assets/javascripts/composer-kit/addon",
     "./plugins/chat/assets/javascripts",
     "./plugins/chat/test/javascripts",
     "./plugins/checklist/assets/javascripts",

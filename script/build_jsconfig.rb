@@ -16,6 +16,7 @@ CORE_NAMESPACES = {
   "float-kit/*" => ["app/assets/javascripts/float-kit/addon"],
   "truth-helpers/*" => ["app/assets/javascripts/truth-helpers/addon"],
   "dialog-holder/*" => ["app/assets/javascripts/dialog-holder/addon"],
+  "composer-kit/*" => ["app/assets/javascripts/composer-kit/addon"],
 }
 
 def relative(from, to)

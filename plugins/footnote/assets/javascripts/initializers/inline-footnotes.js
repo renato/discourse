@@ -1,6 +1,7 @@
 import { createPopper } from "@popperjs/core";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import { iconHTML } from "discourse-common/lib/icon-library";
+import footnoteLexicalImporter from "../lib/lexical/importer";
 
 let inlineFootnotePopper;
 
@@ -127,6 +128,18 @@ export default {
         const tooltip = document.getElementById("footnote-tooltip");
         tooltip?.removeAttribute("data-show");
         tooltip?.removeAttribute("data-footnote-id");
+      });
+
+      api.registerComposerExtension({
+        importer: footnoteLexicalImporter,
+        exporter: {
+          footnote: (node) => {
+            return {
+              type: "html",
+              value: node.children[0].value,
+            };
+          },
+        },
       });
     });
   },
