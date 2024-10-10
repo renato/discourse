@@ -5,6 +5,10 @@ import Service, { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import { isEmpty } from "@ember/utils";
 import { observes, on } from "@ember-decorators/object";
+import {
+  getComposerImplementationList,
+  getDefaultComposerImplementation,
+} from "composer-kit/extensions";
 import $ from "jquery";
 import { Promise } from "rsvp";
 import DiscardDraftModal from "discourse/components/modal/discard-draft";
@@ -125,7 +129,6 @@ export default class ComposerService extends Service {
   linkLookup = null;
   showPreview = true;
   composerHeight = null;
-
   @and("site.mobileView", "showPreview") forcePreview;
   @or("isWhispering", "model.unlistTopic") whisperOrUnlistTopic;
   @alias("site.categoriesList") categories;
@@ -134,6 +137,7 @@ export default class ComposerService extends Service {
   @reads("currentUser.whisperer") whisperer;
   @and("model.creatingTopic", "isStaffUser") canUnlistTopic;
   @or("replyingToWhisper", "model.whisper") isWhispering;
+  _composerImpl = getDefaultComposerImplementation();
 
   get topicController() {
     return getOwnerWithFallback(this).lookup("controller:topic");
@@ -198,6 +202,14 @@ export default class ComposerService extends Service {
     this.set("_formTemplateInitialValues", values);
   }
 
+  @computed
+  get composerImpl() {
+    return this._composerImpl;
+  }
+
+  set composerImpl(impl) {
+    this.set("_composerImpl", impl);
+  }
   @action
   onSelectFormTemplate(formTemplate) {
     this.selectedFormTemplate = formTemplate;

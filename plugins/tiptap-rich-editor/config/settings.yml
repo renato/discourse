@@ -1,0 +1,4 @@
+plugins:
+  experimental_tiptap_rich_editor:
+    default: false
+    client: true

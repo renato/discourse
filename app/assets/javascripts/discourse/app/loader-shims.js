@@ -74,3 +74,31 @@ loaderShim("@messageformat/runtime/lib/cardinals", () =>
   importSync("@messageformat/runtime/lib/cardinals")
 );
 loaderShim("@ember/string", () => importSync("@ember/string"));
+
+// TODO this is necessary so details/footnotes/spoiler plugins can import Lexical classes
+// And, of course, the lexical-rich-editor plugin itself;
+loaderShim("lexical", () => importSync("lexical"));
+loaderShim("@lexical/plain-text", () => importSync("@lexical/plain-text"));
+loaderShim("@lexical/history", () => importSync("@lexical/history"));
+loaderShim("@lexical/utils", () => importSync("@lexical/utils"));
+loaderShim("@lexical/code", () => importSync("@lexical/code"));
+loaderShim("@lexical/selection", () => importSync("@lexical/selection"));
+
+loaderShim("@lexical/link", () => importSync("@lexical/link"));
+loaderShim("@lexical/list", () => importSync("@lexical/list"));
+loaderShim("@lexical/rich-text", () => importSync("@lexical/rich-text"));
+loaderShim("@lexical/table", () => importSync("@lexical/table"));
+loaderShim("@lexical/text", () => importSync("@lexical/text"));
+loaderShim("@lexical/hashtag", () => importSync("@lexical/hashtag"));
+loaderShim("@lexical/clipboard", () => importSync("@lexical/clipboard"));
+loaderShim("mdast-util-to-markdown", () =>
+  importSync("mdast-util-to-markdown")
+);
+loaderShim("@tiptap/core", () => importSync("@tiptap/core"));
+loaderShim("@tiptap/pm", () => importSync("@tiptap/pm"));
+loaderShim("@tiptap/pm/model", () => importSync("@tiptap/pm/model"));
+loaderShim("@tiptap/pm/state", () => importSync("@tiptap/pm/state"));
+loaderShim("@tiptap/starter-kit", () => importSync("@tiptap/starter-kit"));
+loaderShim("@tiptap/extension-link", () =>
+  importSync("@tiptap/extension-link")
+);

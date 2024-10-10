@@ -66,6 +66,10 @@ import classPrepend, {
   withPrependsRolledBack,
 } from "discourse/lib/class-prepend";
 import { addPopupMenuOption } from "discourse/lib/composer/custom-popup-menu-options";
+import {
+  registerComposer,
+  registerComposerExtension,
+} from "composer-kit/extensions";
 import { registerDesktopNotificationHandler } from "discourse/lib/desktop-notifications";
 import { downloadCalendar } from "discourse/lib/download-calendar";
 import { registerHashtagType } from "discourse/lib/hashtag-type-registry";
@@ -3161,6 +3165,14 @@ class PluginApi {
     this.container
       .lookup("service:admin-custom-user-fields")
       .addProperty(userFieldProperty);
+  }
+
+  registerComposer(composerImpl) {
+    registerComposer(composerImpl);
+  }
+
+  registerComposerExtension(extension) {
+    registerComposerExtension(extension);
   }
 
   /**

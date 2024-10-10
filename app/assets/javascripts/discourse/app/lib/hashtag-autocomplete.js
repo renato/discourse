@@ -64,6 +64,7 @@ function _setup(
     key: "#",
     afterComplete: autocompleteOptions.afterComplete,
     treatAsTextarea: autocompleteOptions.treatAsTextarea,
+    textManipulationImpl: autocompleteOptions.textManipulationImpl,
     scrollElementSelector: ".hashtag-autocomplete__fadeout",
     autoSelectFirstSuggestion: true,
     transformComplete: (obj) => obj.ref,
@@ -73,8 +74,7 @@ function _setup(
       }
       return _searchGeneric(term, siteSettings, contextualHashtagConfiguration);
     },
-    triggerRule: async (textarea, opts) =>
-      await hashtagTriggerRule(textarea, opts),
+    triggerRule: (textarea, opts) => hashtagTriggerRule(textarea, opts),
   });
 }
 
